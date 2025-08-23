@@ -1,6 +1,6 @@
 import { useWallet } from '../contexts/WalletContext';
 import { useState, useEffect, useContext, useRef } from 'react';
-import { TwitterAuthContext } from '../App';
+import { TwitterAuthContext } from '../contexts/TwitterAuthContext';
 import { ProfileForm } from './ProfileForm';
 import { useProfileContract } from '../hooks/useProfileContract';
 import '../styles/modal.css';

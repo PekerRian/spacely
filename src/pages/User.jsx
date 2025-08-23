@@ -2,7 +2,7 @@ import './user.css';
 import { useState, useContext } from 'react';
 import { ProfileForm } from '../components/ProfileForm';
 import { useWallet } from '../contexts/WalletContext';
-import { TwitterAuthContext } from '../App';
+import { TwitterAuthContext } from '../contexts/TwitterAuthContext';
 
 export default function User() {
   const { walletAddress } = useWallet();

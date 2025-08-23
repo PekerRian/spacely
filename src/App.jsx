@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import { useState, useEffect, createContext } from 'react';
+import { useState, useEffect } from 'react';
+import { TwitterAuthContext } from './contexts/TwitterAuthContext';
 import './navbar.css';
 import User from './pages/User.jsx';
 import Calendar from './pages/Calendar.jsx';
@@ -8,7 +9,6 @@ import { WalletProvider } from './contexts/WalletContext';
 import { WalletConnect } from './components/WalletConnect';
 
 // Context to share Twitter profile and form state
-export const TwitterAuthContext = createContext();
 
 function Starfield() {
   // Spiral starfield: each star gets a unique angle and speed
