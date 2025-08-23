@@ -55,6 +55,7 @@ function App() {
             </div>
           </nav>
           <Routes>
+            <Route path="/" element={<Navigate to="/user" replace />} />
             <Route path="/user" element={<User />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/ecosystem" element={<Ecosystem />} />
