@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useProfileContract } from '../hooks/useProfileContract';
+import { useWallet } from '../contexts/WalletContext';
 import '../styles/modal.css';
 
 export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) {
   const { createProfile, loading } = useProfileContract();
+  const { connected } = useWallet();
   const [formData, setFormData] = useState({
     username: '',
     bio: '',
@@ -50,6 +52,11 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
       <div className="modal-content">
         <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Complete Your Profile</h2>
+        {!connected && (
+          <div className="wallet-warning" style={{ color: 'red', marginBottom: '1em' }}>
+            Please connect your wallet to create a profile.
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="profile-form">
           <div className="form-group">
             <label>Username</label>
@@ -113,7 +120,7 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
           <button 
             type="submit" 
             className="submit-button"
-            disabled={loading}
+            disabled={loading || !connected}
           >
             {loading ? 'Creating Profile...' : 'Create Profile'}
           </button>
