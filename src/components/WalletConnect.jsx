@@ -45,8 +45,8 @@ export function WalletConnect() {
         name: name || username,
         bio: description || '',
       });
-      // Show profile form immediately after getting Twitter data
-      setShowProfileForm(true);
+      // Redirect to user profile form page
+      window.location.href = '/user';
     } catch (err) {
       console.error('Error handling Twitter profile:', err);
       setError(err.message);
