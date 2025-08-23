@@ -49,16 +49,21 @@ function App() {
   useEffect(() => {
     const handleMessage = (event) => {
       console.log('[App.jsx] Received postMessage event:', event);
-      // TEMP: Log the event origin for debugging
-      if (event.data.type === 'TWITTER_PROFILE') {
-        if (event.data.profile) {
-          console.log('[App.jsx] Setting twitterProfile from postMessage:', event.data.profile);
-          setTwitterProfile(event.data.profile);
-          setShowProfileForm(true);
-        } else {
-          console.error('Twitter profile data missing in callback:', event.data);
-        }
-      } else if (event.data.type === 'TWITTER_ERROR') {
+      // Normalize and accept TWITTER_PROFILE messages from popup
+      if (event.data && event.data.type === 'TWITTER_PROFILE') {
+        const p = event.data.profile || {};
+        // Normalize field names and provide sensible defaults
+        const normalized = {
+          handle: p.handle || p.twitterUsername || p.screen_name || null,
+          url: p.url || (p.twitterUsername ? `https://twitter.com/${p.twitterUsername}` : '') || p.profileUrl || '',
+          name: p.name || p.twitterName || p.screen_name || '',
+          bio: p.bio || p.twitterBio || p.description || '',
+          profile_image_url: p.profile_image_url || p.twitterProfileImageUrl || p.profile_image_url_https || ''
+        };
+        console.log('[App.jsx] Normalized twitter profile:', normalized);
+        setTwitterProfile(normalized);
+        setShowProfileForm(true);
+      } else if (event.data && event.data.type === 'TWITTER_ERROR') {
         console.error('Twitter error:', event.data.error);
         alert('Twitter authentication failed: ' + event.data.error);
       }

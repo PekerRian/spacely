@@ -22,8 +22,24 @@
       bio: params.get('twitterBio') || '',
       profile_image_url: params.get('twitterProfileImageUrl') || '' // <-- add this line
     };
+
+    // Auto-send profile to opener immediately (helps avoid race conditions)
+    try {
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, '*');
+      }
+    } catch (err) {
+      console.error('Failed to postMessage to opener:', err);
+    }
+
     document.getElementById('returnBtn').onclick = function() {
-  window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, '*');
+      try {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, '*');
+        }
+      } catch (err) {
+        console.error('Failed to postMessage to opener:', err);
+      }
       window.close();
     };
   </script>
