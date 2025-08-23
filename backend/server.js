@@ -99,16 +99,20 @@ app.get('/api/auth/twitter/callback', async (req, res) => {
             // Add all required fields for the frontend popup
             const params = new URLSearchParams({
               auth: 'success',
-              twitterId: twitterData.id_str,
-              twitterUsername: twitterData.screen_name,
-              twitterName: twitterData.name || '',
-              twitterBio: twitterData.description || '',
-              twitterProfileImageUrl: twitterData.profile_image_url_https || twitterData.profile_image_url || '',
+              twitterId: twitterData?.id_str || '',
+              twitterUsername: twitterData?.screen_name || '',
+              twitterName: twitterData?.name || '',
+              twitterBio: twitterData?.description || '',
+              twitterProfileImageUrl: twitterData?.profile_image_url_https || twitterData?.profile_image_url || '',
               walletAddress: walletAddress || ''
             });
             // Redirect the popup to the hosted success page so it can postMessage back to the opener
             // e.g. https://your-frontend.com/twitter-auth-success.html?...
             const successUrl = `${process.env.FRONTEND_URL.replace(/\/$/, '')}/twitter-auth-success.html?${params.toString()}`;
+            // Log for debugging: show what we received from Twitter and the redirect URL we will send the user to
+            console.log('[backend] twitterData:', twitterData);
+            console.log('[backend] walletAddress:', walletAddress);
+            console.log('[backend] redirecting popup to:', successUrl);
             res.redirect(successUrl);
           }
         );

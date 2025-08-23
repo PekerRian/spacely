@@ -1,5 +1,5 @@
 import { useWallet } from '../contexts/WalletContext';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { TwitterAuthContext } from '../App';
 import { ProfileForm } from './ProfileForm';
 import { useProfileContract } from '../hooks/useProfileContract';
@@ -56,11 +56,16 @@ export function WalletConnect() {
 
   // No longer needed: Twitter OAuth callback via URL params (handled globally)
 
-  // Start Twitter auth after wallet connection
+  // Start Twitter auth only when connection transitions from false -> true
+  const prevConnectedRef = useRef(connected);
   useEffect(() => {
-    if (connected && account?.address && !twitterProfile) {
+    const prev = prevConnectedRef.current;
+    // rising edge: was not connected, now is connected
+    if (!prev && connected && account?.address && !twitterProfile) {
+      console.log('[WalletConnect] detected wallet connect, starting Twitter auth');
       handleTwitterAuth();
     }
+    prevConnectedRef.current = connected;
   }, [connected, account?.address, twitterProfile]);
 
 
