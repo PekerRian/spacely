@@ -41,8 +41,8 @@ export default async function handler(req, res) {
             }
             try {
               const twitterData = JSON.parse(data);
-              // Redirect to frontend with profile info
-              const redirectUrl = `${process.env.FRONTEND_URL}?auth=success&twitterId=${twitterData.id_str}&twitterUsername=${twitterData.screen_name}`;
+              // Redirect to /user with profile info
+              const redirectUrl = `${process.env.FRONTEND_URL}/user?auth=success&twitterId=${twitterData.id_str}&twitterUsername=${twitterData.screen_name}&name=${encodeURIComponent(twitterData.name || '')}&bio=${encodeURIComponent(twitterData.description || '')}&profile_image=${encodeURIComponent(twitterData.profile_image_url || '')}`;
               res.writeHead(302, { Location: redirectUrl });
               res.end();
             } catch (err) {
