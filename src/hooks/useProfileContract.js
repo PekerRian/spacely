@@ -3,7 +3,8 @@ import { useWallet } from '../contexts/WalletContext';
 import { Types } from 'aptos';
 
 export function useProfileContract() {
-  const { signAndSubmitTransaction } = useWallet();
+  const { signAndSubmitTransaction, connected } = useWallet();
+  console.log('Wallet context in useProfileContract:', { connected, signAndSubmitTransaction });
   const [loading, setLoading] = useState(false);
 
   const checkProfile = async (address) => {
