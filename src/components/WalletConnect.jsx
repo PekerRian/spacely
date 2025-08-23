@@ -7,6 +7,16 @@ import '../styles/modal.css';
 import { useNavigate } from 'react-router-dom';
 
 export function WalletConnect() {
+  // Handles wallet connect/disconnect button
+  const handleConnectWallet = async () => {
+    if (connected) {
+      await disconnect();
+      setShowProfileForm(false);
+    } else {
+      setShowLoginModal(true);
+    }
+    setError(null);
+  };
   const navigate = useNavigate();
   const { connect, disconnect, account, wallets, connected } = useWallet();
   const [showAddressMenu, setShowAddressMenu] = useState(false);
