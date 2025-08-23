@@ -43,7 +43,7 @@ export function WalletConnect() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected, account?.address]);
 
-  // PKCE Twitter OAuth2 flow client-side only
+  // PKCE Twitter OAuth2 flow using serverless function
   const handleTwitterAuth = async () => {
     // 1. Generate code_verifier and code_challenge
     const codeVerifier = generateRandomString(64);
@@ -55,20 +55,47 @@ export function WalletConnect() {
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: import.meta.env.VITE_TWITTER_CLIENT_ID,
-      redirect_uri: window.location.origin + '/twitter-callback',
+      redirect_uri: window.location.origin + '/',
       scope: 'tweet.read users.read offline.access',
       state,
       code_challenge: codeChallenge,
       code_challenge_method: 'S256',
     });
     const authUrl = `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
-    // 3. Open popup
-    const width = 600;
-    const height = 600;
-    const left = window.screenX + (window.outerWidth - width) / 2;
-    const top = window.screenY + (window.outerHeight - height) / 2;
-    window.open(authUrl, 'twitter-auth', `width=${width},height=${height},left=${left},top=${top}`);
+    // 3. Redirect (or open popup)
+    window.location.href = authUrl;
   };
+
+  // Handle Twitter OAuth2 callback (call serverless function)
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
+    const storedState = sessionStorage.getItem('twitter_state');
+    if (code && state && state === storedState) {
+      const codeVerifier = sessionStorage.getItem('twitter_verifier');
+      const redirect_uri = window.location.origin + '/';
+      // Exchange code for profile via serverless function
+      fetch('/api/twitter-callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, code_verifier: codeVerifier, redirect_uri }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.profile) {
+            setTwitterProfile(data.profile);
+          } else {
+            alert('Twitter authentication failed: ' + (data.error || 'Unknown error'));
+          }
+        })
+        .catch(e => {
+          alert('Twitter authentication failed: ' + e.message);
+        });
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [setTwitterProfile]);
 
   // Helper: PKCE
   function generateRandomString(length) {
