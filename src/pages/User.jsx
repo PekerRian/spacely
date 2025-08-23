@@ -1,39 +1,12 @@
 import './user.css';
-import { useState, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import { ProfileForm } from '../components/ProfileForm';
 import { useWallet } from '../contexts/WalletContext';
+import { TwitterAuthContext } from '../App';
 
 export default function User() {
   const { walletAddress } = useWallet();
-  const [twitterProfile, setTwitterProfile] = useState(null);
-  const [showProfileForm, setShowProfileForm] = useState(false);
-
-  useEffect(() => {
-    const handleMessage = (event) => {
-      console.log('Received postMessage event:', event);
-      if (event.origin !== window.location.origin) return;
-      if (event.data.type === 'TWITTER_PROFILE') {
-        if (event.data.profile) {
-          setTwitterProfile(event.data.profile);
-          setShowProfileForm(true);
-        } else {
-          console.error('Twitter profile data missing in callback:', event.data);
-        }
-      } else if (event.data.type === 'TWITTER_ERROR') {
-        console.error('Twitter error:', event.data.error);
-        alert('Twitter authentication failed: ' + event.data.error);
-      }
-    };
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  // Show form if twitterProfile is present after redirect
-  useEffect(() => {
-    if (twitterProfile && !showProfileForm) {
-      setShowProfileForm(true);
-    }
-  }, [twitterProfile, showProfileForm]);
+  const { twitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
   const [tab, setTab] = useState('badges');
 
   let content;
