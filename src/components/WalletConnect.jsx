@@ -9,13 +9,28 @@ import { useNavigate } from 'react-router-dom';
 export function WalletConnect() {
   // Handles wallet connect/disconnect button
   const handleConnectWallet = async () => {
+    setError(null);
     if (connected) {
       await disconnect();
       setShowProfileForm(false);
-    } else {
-      setShowLoginModal(true);
+      return;
     }
-    setError(null);
+    setShowLoginModal(true);
+    // Wait for wallet connection to complete before checking profile
+    setTimeout(async () => {
+      if (account?.address) {
+        try {
+          const exists = await checkProfile(account.address);
+          if (!exists) {
+            setShowProfileForm(true);
+          } else {
+            setShowProfileForm(false);
+          }
+        } catch (err) {
+          setError('Error checking profile: ' + (err?.message || err));
+        }
+      }
+    }, 500);
   };
   const navigate = useNavigate();
   const { connect, disconnect, account, wallets, connected } = useWallet();
