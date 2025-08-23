@@ -1,5 +1,6 @@
 import { useWallet } from '../contexts/WalletContext';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
+import { TwitterAuthContext } from '../App';
 import { ProfileForm } from './ProfileForm';
 import { useProfileContract } from '../hooks/useProfileContract';
 import '../styles/modal.css';
@@ -9,11 +10,10 @@ export function WalletConnect() {
   const navigate = useNavigate();
   const { connect, disconnect, account, wallets, connected } = useWallet();
   const [showAddressMenu, setShowAddressMenu] = useState(false);
-  const [showProfileForm, setShowProfileForm] = useState(false);
   const [error, setError] = useState(null);
-  const [twitterProfile, setTwitterProfile] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const { checkProfile, createProfile } = useProfileContract();
+  const { twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
 
   // Use backend for Twitter OAuth flow
   const handleTwitterAuth = async () => {
@@ -38,22 +38,7 @@ export function WalletConnect() {
     }
   };
 
-  const handleTwitterProfile = (profileData) => {
-    try {
-      const { username, url, name, description } = profileData;
-      setTwitterProfile({
-        handle: username,
-        url: url || `https://twitter.com/${username}`,
-        name: name || username,
-        bio: description || '',
-      });
-      setShowProfileForm(true);
-      // No navigation here; popup will close itself
-    } catch (err) {
-      console.error('Error handling Twitter profile:', err);
-      setError(err.message);
-    }
-  };
+  // No longer needed: handleTwitterProfile (handled globally)
 
   const checkAndHandleProfile = async (address) => {
     try {
@@ -69,26 +54,7 @@ export function WalletConnect() {
     }
   };
 
-  // Handle Twitter OAuth response
-  useEffect(() => {
-    // Listen for Twitter OAuth callback via URL params
-    const checkTwitterCallback = () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('auth') === 'success') {
-        const twitterProfile = {
-          handle: params.get('twitterUsername'),
-          url: `https://twitter.com/${params.get('twitterUsername')}`,
-          name: params.get('twitterUsername'),
-          bio: '',
-        };
-        setTwitterProfile(twitterProfile);
-        setShowProfileForm(true);
-      } else if (params.get('auth') === 'error') {
-        setError(params.get('error'));
-      }
-    };
-    checkTwitterCallback();
-  }, [connected, account?.address]);
+  // No longer needed: Twitter OAuth callback via URL params (handled globally)
 
   // Start Twitter auth after wallet connection
   useEffect(() => {
