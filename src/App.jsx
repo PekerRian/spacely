@@ -48,10 +48,11 @@ function App() {
 
   useEffect(() => {
     const handleMessage = (event) => {
-      console.log('Received postMessage event:', event);
-      if (event.origin !== window.location.origin) return;
+      console.log('[App.jsx] Received postMessage event:', event);
+      // TEMP: Log the event origin for debugging
       if (event.data.type === 'TWITTER_PROFILE') {
         if (event.data.profile) {
+          console.log('[App.jsx] Setting twitterProfile from postMessage:', event.data.profile);
           setTwitterProfile(event.data.profile);
           setShowProfileForm(true);
         } else {
