@@ -69,6 +69,8 @@ export function WalletConnect() {
         return btoa(String.fromCharCode(...new Uint8Array(digest)))
           .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
       }
+  const handlePetraConnect = async () => {
+    try {
       if (!wallets || wallets.length === 0) {
         throw new Error('No wallets available');
       }
