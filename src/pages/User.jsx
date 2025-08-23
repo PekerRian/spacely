@@ -37,7 +37,7 @@ export default function User() {
         <div className="profile-card">
           <img 
             className="profile-avatar" 
-            src={twitterProfile?.profile_image || "https://placehold.co/120x120/22ff22/111?text=IMG"} 
+            src={twitterProfile?.profile_image_url || "https://placehold.co/120x120/22ff22/111?text=IMG"} 
             alt="Profile" 
           />
           <div className="profile-info">
