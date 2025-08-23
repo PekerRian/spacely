@@ -114,13 +114,33 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
           </div>
           <div className="form-group">
             <label>Twitter URL</label>
-            <input
-              type="url"
-              name="twitter_url"
-              value={formData.twitter_url}
-              className="form-control"
-              readOnly
-            />
+            {formData.twitter_url ? (
+              <input
+                type="url"
+                name="twitter_url"
+                value={formData.twitter_url}
+                className="form-control"
+                readOnly
+              />
+            ) : (
+              <button
+                type="button"
+                className="login-option"
+                style={{ marginTop: '0.5em' }}
+                onClick={() => {
+                  if (window.handleTwitterAuth) {
+                    window.handleTwitterAuth();
+                  } else if (typeof window !== 'undefined' && window.parent && window.parent.handleTwitterAuth) {
+                    window.parent.handleTwitterAuth();
+                  } else {
+                    const event = new CustomEvent('triggerTwitterAuth');
+                    window.dispatchEvent(event);
+                  }
+                }}
+              >
+                Connect Twitter
+              </button>
+            )}
           </div>
           <button 
             type="submit" 
