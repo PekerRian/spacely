@@ -99,6 +99,17 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
               required
             />
           </div>
+          <div className="form-group">
+            <label>Twitter URL</label>
+            <input
+              type="url"
+              name="twitter_url"
+              value={formData.twitter_url}
+              className="form-control"
+              readOnly
+              disabled
+            />
+          </div>
           <button 
             type="submit" 
             className="submit-button"
