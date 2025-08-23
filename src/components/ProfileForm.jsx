@@ -120,7 +120,6 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
               value={formData.twitter_url}
               className="form-control"
               readOnly
-              disabled
             />
           </div>
           <button 
