@@ -16,6 +16,7 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
 
   // Update form when Twitter profile changes
   useEffect(() => {
+    console.log('twitterProfile in ProfileForm:', twitterProfile);
     if (twitterProfile) {
       setFormData(prev => ({
         username: twitterProfile.handle || prev.username,
