@@ -25,6 +25,7 @@ module spacely::profiles {
         bio: String,
         profile_image: String,
         affiliation: String,
+        twitter_url: String,
         friend_count: u64,
     // created_at: u64,
     // updated_at: u64,
@@ -159,7 +160,8 @@ module spacely::profiles {
         username: String,
         bio: String,
         profile_image: String,
-        affiliation: String
+        affiliation: String,
+        twitter_url: String
     ): Object<UserProfile> acquires ProfileCollection {
         let admin_addr = signer::address_of(creator); // always use admin for tests
     // Enforce unique username
@@ -177,6 +179,7 @@ module spacely::profiles {
             bio,
             profile_image,
             affiliation,
+            twitter_url,
             friend_count: 0,
         };
         vector::push_back(&mut collection.usernames, username);

@@ -18,9 +18,9 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
       setFormData(prev => ({
         username: twitterProfile.handle || prev.username,
         bio: twitterProfile.bio || prev.bio,
-        profile_image: prev.profile_image,
+        profile_image: twitterProfile.profile_image_url || prev.profile_image,
         affiliation: prev.affiliation,
-        twitter_url: twitterProfile.url
+        twitter_url: twitterProfile.url || ''
       }));
     }
   }, [twitterProfile]);

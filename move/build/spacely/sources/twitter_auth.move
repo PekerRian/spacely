@@ -1,7 +1,8 @@
 module spacely::twitter_auth {
-    use std::string::{String};
+    use std::string::{Self, String};
     use aptos_framework::account;
     use aptos_std::table::{Self, Table};
+    use std::signer;
     
     struct TwitterProfile has key {
         // Store Twitter profiles by account address
@@ -25,7 +26,7 @@ module spacely::twitter_auth {
         twitter_id: String,
         twitter_username: String,
     ) acquires TwitterProfile {
-        let signer_addr = account::get_address(account);
+        let signer_addr = signer::address_of(account);
         let twitter_auth = borrow_global_mut<TwitterProfile>(@spacely);
         
         let twitter_info = TwitterInfo {
