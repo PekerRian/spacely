@@ -1,0 +1,15 @@
+[package]
+name = "spacely"
+version = "1.0.0"
+authors = []
+
+[addresses]
+spacely = "_"
+
+[dev-addresses]
+spacely = "030a49e550317d928495602ea9146550f90ec9808666fa5bd949e8ef9db5ff31"
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "mainnet"
+subdir = "aptos-move/framework/aptos-framework"

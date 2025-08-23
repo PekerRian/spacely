@@ -1,0 +1,320 @@
+/* =====================
+   Original Styles
+   ===================== */
+body {
+  background: #000;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.page-container {
+  width: 100%;
+  margin: 2rem 0;
+  padding: 2rem 1rem;
+  background: #000;
+  border: 4px solid #22ff22;
+  border-radius: 1.5rem;
+  box-sizing: border-box;
+  box-shadow: 0 2px 12px #22ff2240;
+  min-height: 80vh;
+}
+
+.navbar {
+  padding: 1.2rem 2rem;
+  background: #000;
+  border: 4px solid #22ff22;
+  border-radius: 1.25rem;
+  position: relative;
+  z-index: 10;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.navbar-links {
+  display: flex;
+  justify-content: center;
+  gap: 6rem;
+}
+
+.login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  font-size: 1.25rem;
+  border: 2px solid #22ff22;
+  color: #fff;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+  position: relative;
+}
+
+.login-button:hover {
+  background: #22ff2220;
+  box-shadow: 0 0 15px #22ff2240;
+}
+
+.login-button:active {
+  transform: scale(0.98);
+}
+
+.login-icon {
+  font-size: 1.4rem;
+}
+
+.login-text {
+  display: none;
+}
+
+.login-button.connected {
+  background: #22ff2210;
+  position: relative;
+}
+
+.login-button.connected:hover {
+  background: #22ff2230;
+}
+
+.address-menu {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  min-width: 160px;
+  background: #000;
+  border: 2px solid #22ff22;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0;
+  z-index: 1000;
+}
+
+.menu-item {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+  background: #22ff2220;
+}
+
+@keyframes connectGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px #22ff2240;
+  }
+  50% {
+    box-shadow: 0 0 15px #22ff2280;
+  }
+}
+
+.error-tooltip {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: #ff2222;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar-link {
+  display: inline-block;
+  padding: 0.3rem 2rem;
+  border-radius: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  border: 2px solid #22ff22;
+  color: #fff;
+  background: none;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.navbar-link.active, .navbar-link:focus {
+  color: #22ff22;
+  border-bottom: 4px solid #22ff22;
+  background: #000;
+  font-weight: 800;
+  text-shadow: 0 0 8px #00ff00;
+}
+
+.navbar-link:hover {
+  color: #66ff99;
+  border-bottom: 4px solid #66ff99;
+}
+
+.page-title {
+  color: #22ff22;
+  font-size: 2rem;
+  font-family: inherit;
+  text-align: center;
+  margin-top: 5rem;
+  text-shadow: 0 0 8px #00ff00;
+}
+
+/* =====================
+   Mobile Styles
+   ===================== */
+@media (max-width: 768px) {
+  body {
+    padding: 0;
+  }
+
+  .page-container {
+    width: 100%;
+    padding: 1rem 0.5rem;
+    margin: 1rem auto;
+    border-radius: 1rem;
+    min-height: 70vh;
+  }
+  
+  .navbar {
+    padding: 0.8rem 0;
+    margin: 0.5rem auto;
+    border-width: 2px;
+    width: calc(100% - 1rem);
+    box-sizing: border-box;
+  }
+
+  .navbar-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    padding: 0;
+  }
+
+  .navbar-links {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+  }
+
+  .navbar-link {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    letter-spacing: 0.05em;
+    border-width: 1px;
+    margin: 0;
+    width: auto;
+    min-width: 0;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .login-button {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-width: 1px;
+    margin: 0;
+  }
+
+  .login-icon {
+    font-size: 1.2rem;
+  }
+
+  .address-menu {
+    min-width: 140px;
+    font-size: 0.8rem;
+  }
+
+  .menu-item {
+    padding: 0.4rem 0.75rem;
+  }
+}
+
+/* =====================
+   Animations (Starfield)
+   ===================== */
+.stars {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: moveStar linear infinite;
+}
+
+@keyframes moveStar {
+  0% {
+    transform: translateY(0);
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+.spiral-star {
+  /* Start at center, animate outward in a spiral */
+  left: 50vw;
+  top: 50vh;
+  transform: translate(-50%, -50%);
+  animation-name: spiralMoveStar;
+}
+
+@keyframes spiralMoveStar {
+  0% {
+    transform: translate(-50%, -50%) rotate(var(--spiral-angle)) translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    /* Move outward in a spiral: radius increases with turns */
+    transform: translate(-50%, -50%) rotate(var(--spiral-angle)) translate(calc(var(--spiral-turns,2.5) * 45vw), calc(var(--spiral-turns,2.5) * 45vh));
+    opacity: 0;
+  }
+}

@@ -1,0 +1,78 @@
+import { useState, useEffect } from 'react';
+
+export function TwitterAuthModal({ isOpen, onClose, walletAddress, onTwitterSuccess }) {
+  if (!isOpen) return null;
+
+  const [loginError, setLoginError] = useState(null);
+
+  const handleTwitterLogin = async () => {
+    try {
+      setLoginError(null);
+      const response = await fetch('http://localhost:3001/api/auth/twitter/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ walletAddress }),
+        credentials: 'include'
+      }).catch(error => {
+        if (error.message.includes('ERR_CONNECTION_REFUSED')) {
+          throw new Error('Unable to connect to authentication server. Please try again later.');
+        }
+        throw error;
+      });
+
+      const data = await response.json();
+      
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      const width = 600;
+      const height = 600;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      
+      const popup = window.open(
+        data.authUrl,
+        'Twitter Login',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+
+      const checkPopup = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkPopup);
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('auth') === 'success') {
+            const twitterUsername = urlParams.get('twitterUsername');
+            onTwitterSuccess(twitterUsername);
+            onClose();
+          }
+        }
+      }, 500);
+
+    } catch (error) {
+      console.error('Twitter login error:', error);
+      setLoginError(error.message);
+    }
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content">
+        <button className="modal-close" onClick={onClose}>&times;</button>
+        <h2>Connect with Twitter</h2>
+        <p>Link your Twitter account to continue</p>
+        {loginError && (
+          <div className="error-message">
+            {loginError}
+          </div>
+        )}
+        <button className="twitter-button" onClick={handleTwitterLogin}>
+          <span className="twitter-icon">𝕏</span>
+          Continue with Twitter
+        </button>
+      </div>
+    </div>
+  );
+}
