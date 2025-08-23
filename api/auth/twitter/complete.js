@@ -34,44 +34,28 @@ function getTwitterUser(accessToken, accessTokenSecret) {
 }
 
 export default async function handler(req, res) {
-  // Twitter redirects to this endpoint with oauth_token & oauth_verifier
-  const { oauth_token: oauthToken, oauth_verifier: oauthVerifier } = req.query || {};
-  if (!oauthToken || !oauthVerifier) return res.status(400).send('Missing oauth params');
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', ['POST']);
+    return res.status(405).end('Method Not Allowed');
+  }
+
+  const { oauth_token: oauthToken, oauth_verifier: oauthVerifier } = req.body || {};
+  if (!oauthToken || !oauthVerifier) return res.status(400).json({ error: 'Missing oauth params' });
 
   try {
-    // Retrieve stored secret from KV
     const raw = await kv.get(`oauth:${oauthToken}`);
-    if (!raw) return res.status(400).send('No matching OAuth session');
+    if (!raw) return res.status(400).json({ error: 'No matching OAuth session' });
     const { oauthTokenSecret, walletAddress } = JSON.parse(raw);
 
-    // Exchange for access token
     const { accessToken, accessTokenSecret } = await getAccessToken(oauthToken, oauthTokenSecret, oauthVerifier);
-
-    // Fetch Twitter user
     const twitterData = await getTwitterUser(accessToken, accessTokenSecret);
 
     // Clean up KV
     await kv.del(`oauth:${oauthToken}`);
 
-    // Build redirect URL back to frontend popup page
-    const params = new URLSearchParams({
-      auth: 'success',
-      twitterId: twitterData?.id_str || '',
-      twitterUsername: twitterData?.screen_name || '',
-      twitterName: twitterData?.name || '',
-      twitterBio: twitterData?.description || '',
-      twitterProfileImageUrl: twitterData?.profile_image_url_https || twitterData?.profile_image_url || '',
-      walletAddress: walletAddress || ''
-    });
-    const frontend = (process.env.FRONTEND_URL || '').replace(/\/$/, '');
-    const successUrl = `${frontend}/twitter-auth-success.html?${params.toString()}`;
-
-    console.log('[api/auth/twitter/callback] twitterData:', twitterData);
-    console.log('[api/auth/twitter/callback] redirecting popup to:', successUrl);
-
-    return res.redirect(successUrl);
+    return res.json({ twitterData, walletAddress });
   } catch (err) {
-    console.error('[api/auth/twitter/callback] error:', err);
-    return res.status(500).send('OAuth callback failed');
+    console.error('[api/auth/twitter/complete] error:', err);
+    return res.status(500).json({ error: 'Failed to complete OAuth' });
   }
 }
