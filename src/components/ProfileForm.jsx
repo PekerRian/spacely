@@ -4,6 +4,7 @@ import { useWallet } from '../contexts/WalletContext';
 import '../styles/modal.css';
 
 export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) {
+  console.log('[ProfileForm] Rendered. twitterProfile prop:', twitterProfile);
   const { createProfile, loading } = useProfileContract();
   const { connected } = useWallet();
   const [formData, setFormData] = useState({
