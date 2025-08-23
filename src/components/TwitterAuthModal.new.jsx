@@ -41,25 +41,28 @@ export function TwitterAuthModal({ isOpen, onClose, walletAddress, onTwitterSucc
 
       // Build the authorization URL
       // Use backend endpoint for Twitter OAuth
-      const response = await fetch('https://spacely-blush.vercel.app/api/auth/twitter/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress }) // pass walletAddress if needed
-      });
-      const data = await response.json();
-      if (data.authUrl) {
-        const width = 600;
-        const height = 600;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-        window.open(
-          data.authUrl,
-          'Twitter Login',
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
-      } else {
-        setLoginError('Failed to get Twitter auth URL from backend.');
-      }
+      const startTwitterAuth = async () => {
+        const response = await fetch('https://spacely-blush.vercel.app/api/auth/twitter/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ walletAddress }) // pass walletAddress if needed
+        });
+        const data = await response.json();
+        if (data.authUrl) {
+          const width = 600;
+          const height = 600;
+          const left = window.screen.width / 2 - width / 2;
+          const top = window.screen.height / 2 - height / 2;
+          window.open(
+            data.authUrl,
+            'Twitter Login',
+            `width=${width},height=${height},left=${left},top=${top}`
+          );
+        } else {
+          setLoginError('Failed to get Twitter auth URL from backend.');
+        }
+      };
+      startTwitterAuth();
     } catch (error) {
       console.error('Twitter login error:', error);
       setLoginError('Failed to connect to Twitter. Please try again.');
