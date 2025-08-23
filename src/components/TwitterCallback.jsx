@@ -20,15 +20,15 @@ export function TwitterCallback() {
         }
 
         // Exchange code for token
+
         const tokenParams = new URLSearchParams({
           code: code,
           grant_type: 'authorization_code',
-          client_id: 'Ym5VZ2lEakdpa3l0MEh3T1Z6UVg6MTpjaQ',
-          redirect_uri: window.location.origin,
-          code_verifier: codeVerifier,
-          client_secret: 'KIH6T0W1KRldxTDwOlO1kVRtzt13qVb0kJfahzQAoKikZThL_I'
+          client_id: import.meta.env.VITE_TWITTER_CLIENT_ID,
+          redirect_uri: window.location.origin + '/twitter-callback',
+          code_verifier: codeVerifier
         });
-        
+
         const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
           method: 'POST',
           headers: {
