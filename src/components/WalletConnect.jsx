@@ -16,22 +16,23 @@ export function WalletConnect() {
       return;
     }
     setShowLoginModal(true);
-    // Wait for wallet connection to complete before checking profile
-    setTimeout(async () => {
-      if (account?.address) {
+  };
+
+  // Check for profile existence when wallet connects
+  useEffect(() => {
+    const check = async () => {
+      if (connected && account?.address) {
         try {
           const exists = await checkProfile(account.address);
-          if (!exists) {
-            setShowProfileForm(true);
-          } else {
-            setShowProfileForm(false);
-          }
+          setShowProfileForm(!exists);
         } catch (err) {
           setError('Error checking profile: ' + (err?.message || err));
         }
       }
-    }, 500);
-  };
+    };
+    check();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected, account?.address]);
   const navigate = useNavigate();
   const { connect, disconnect, account, wallets, connected } = useWallet();
   const [showAddressMenu, setShowAddressMenu] = useState(false);
