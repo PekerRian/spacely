@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Twitter Authentication Success</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 60px; }
+    button { font-size: 1.2em; padding: 0.5em 2em; margin-top: 2em; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h2>Twitter authentication successful!</h2>
+  <p>You can now return to Spacely to complete your profile.</p>
+  <button id="returnBtn">Return to Spacely</button>
+  <script>
+    // Replace these with actual values from your backend or query params
+    const params = new URLSearchParams(window.location.search);
+    const profile = {
+      handle: params.get('twitterUsername'),
+      url: params.get('twitterUsername') ? `https://twitter.com/${params.get('twitterUsername')}` : '',
+      name: params.get('twitterName') || params.get('twitterUsername'),
+      bio: params.get('twitterBio') || ''
+    };
+    document.getElementById('returnBtn').onclick = function() {
+      window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, window.origin);
+      window.close();
+    };
+  </script>
+</body>
+</html>
