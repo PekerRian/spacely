@@ -44,22 +44,6 @@ export function TwitterAuthModal({ isOpen, onClose, walletAddress, onTwitterSucc
       const response = await fetch('https://spacely-blush.vercel.app/api/auth/twitter/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ walletAddress }) // pass walletAddress if needed
-      });
-      if (!response.ok) {
-        const text = await response.text();
-        let jsonErr = null;
-        try { jsonErr = JSON.parse(text); } catch (e) {}
-        const errMsg = jsonErr?.error || text || `HTTP ${response.status}`;
-        console.error('[TwitterAuthModal] /api/auth/twitter/start error:', errMsg, jsonErr || text);
-        setLoginError(errMsg);
-        return;
-      }
-      const data = await response.json();
-      if (data.authUrl) {
-        const width = 600;
-    // Handle PKCE client-only logic here if needed
-        <button className="twitter-button" onClick={handleTwitterLogin}>
           <span className="twitter-icon">𝕏</span>
           Continue with Twitter
         </button>
