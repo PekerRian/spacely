@@ -3,7 +3,7 @@ import { useProfileContract } from '../hooks/useProfileContract';
 import { useWallet } from '../contexts/WalletContext';
 import '../styles/modal.css';
 
-export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) {
+export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, onTwitterAuth }) {
   console.log('[ProfileForm] Rendered. twitterProfile prop:', twitterProfile);
   const { createProfile, loading } = useProfileContract();
   const { connected } = useWallet();
@@ -127,16 +127,7 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
                 type="button"
                 className="login-option"
                 style={{ marginTop: '0.5em' }}
-                onClick={() => {
-                  if (window.handleTwitterAuth) {
-                    window.handleTwitterAuth();
-                  } else if (typeof window !== 'undefined' && window.parent && window.parent.handleTwitterAuth) {
-                    window.parent.handleTwitterAuth();
-                  } else {
-                    const event = new CustomEvent('triggerTwitterAuth');
-                    window.dispatchEvent(event);
-                  }
-                }}
+                onClick={onTwitterAuth}
               >
                 Connect Twitter
               </button>

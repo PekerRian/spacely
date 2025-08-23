@@ -166,6 +166,7 @@ export function WalletConnect() {
         onClose={() => setShowProfileForm(false)}
         walletAddress={account?.address?.toString()}
         twitterProfile={twitterProfile}
+        onTwitterAuth={handleTwitterAuth}
       />
     </>
   );
