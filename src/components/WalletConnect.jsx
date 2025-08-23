@@ -61,6 +61,7 @@ export function WalletConnect() {
         for (let i = 0; i < array.length; i++) {
           result += charset[array[i] % charset.length];
         }
+      }
         return result;
       }
       async function pkceChallengeFromVerifier(v) {
