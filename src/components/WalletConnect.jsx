@@ -129,13 +129,14 @@ export function WalletConnect() {
             </div>
           </div>
         )}
-      </button>
-
-      {showLoginModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Choose Login Method</h2>
-            <button className="login-option" onClick={handleGoogleLogin}>Login with Google</button>
+              if (!wallets || wallets.length === 0) {
+                throw new Error('No wallets available');
+              }
+              await connect(wallets[0].name);
+              setShowLoginModal(false);
+              setError(null);
+            } catch (err) {
+              setError(err.message);
             <button className="login-option" onClick={handleAppleLogin}>Login with Apple</button>
             <button className="login-option" onClick={handlePetraConnect}>Login with Petra Wallet</button>
             <button className="close-modal" onClick={() => setShowLoginModal(false)}>Cancel</button>
