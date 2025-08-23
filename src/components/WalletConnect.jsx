@@ -10,6 +10,7 @@ export function WalletConnect() {
   const [showProfileForm, setShowProfileForm] = useState(false);
   const [error, setError] = useState(null);
   const [twitterProfile, setTwitterProfile] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const { checkProfile, createProfile } = useProfileContract();
 
   // Use backend for Twitter OAuth flow
@@ -102,17 +103,37 @@ export function WalletConnect() {
         await disconnect();
         setShowProfileForm(false);
       } else {
-        if (!wallets || wallets.length === 0) {
-          throw new Error('No wallets available');
-        }
-        await connect(wallets[0].name);
-        // Profile check will be handled by the useEffect
+        setShowLoginModal(true);
       }
       setError(null);
     } catch (err) {
       console.error('Wallet connection error:', err);
       setError(err.message);
     }
+  };
+
+  const handlePetraConnect = async () => {
+    try {
+      if (!wallets || wallets.length === 0) {
+        throw new Error('No wallets available');
+      }
+      await connect(wallets[0].name);
+      setShowLoginModal(false);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    // TODO: Implement Google OAuth
+    alert('Google login not implemented yet.');
+    setShowLoginModal(false);
+  };
+
+  const handleAppleLogin = () => {
+    // TODO: Implement Apple OAuth
+    alert('Apple login not implemented yet.');
+    setShowLoginModal(false);
   };
 
   // Format address for display (first 6 and last 4 characters)
@@ -154,6 +175,18 @@ export function WalletConnect() {
           </div>
         )}
       </button>
+
+      {showLoginModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h2>Choose Login Method</h2>
+            <button className="login-option" onClick={handleGoogleLogin}>Login with Google</button>
+            <button className="login-option" onClick={handleAppleLogin}>Login with Apple</button>
+            <button className="login-option" onClick={handlePetraConnect}>Login with Petra Wallet</button>
+            <button className="close-modal" onClick={() => setShowLoginModal(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
       
       <ProfileForm
         isOpen={showProfileForm}
