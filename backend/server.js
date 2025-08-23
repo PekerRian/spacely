@@ -106,7 +106,10 @@ app.get('/api/auth/twitter/callback', async (req, res) => {
               twitterProfileImageUrl: twitterData.profile_image_url_https || twitterData.profile_image_url || '',
               walletAddress: walletAddress || ''
             });
-            res.redirect(`${process.env.FRONTEND_URL}?${params.toString()}`);
+            // Redirect the popup to the hosted success page so it can postMessage back to the opener
+            // e.g. https://your-frontend.com/twitter-auth-success.html?...
+            const successUrl = `${process.env.FRONTEND_URL.replace(/\/$/, '')}/twitter-auth-success.html?${params.toString()}`;
+            res.redirect(successUrl);
           }
         );
       } catch (error) {
