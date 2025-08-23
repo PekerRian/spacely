@@ -1,10 +1,12 @@
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { useWallet } from '../contexts/WalletContext';
 import { useState, useEffect } from 'react';
 import { ProfileForm } from './ProfileForm';
 import { useProfileContract } from '../hooks/useProfileContract';
 import '../styles/modal.css';
+import { useNavigate } from 'react-router-dom';
 
 export function WalletConnect() {
+  const navigate = useNavigate();
   const { connect, disconnect, account, wallets, connected } = useWallet();
   const [showAddressMenu, setShowAddressMenu] = useState(false);
   const [showProfileForm, setShowProfileForm] = useState(false);
@@ -46,7 +48,7 @@ export function WalletConnect() {
         bio: description || '',
       });
       // Redirect to user profile form page
-      window.location.href = '/user';
+      navigate('/user');
     } catch (err) {
       console.error('Error handling Twitter profile:', err);
       setError(err.message);

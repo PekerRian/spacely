@@ -12,10 +12,15 @@ export default function User() {
     const handleMessage = (event) => {
       if (event.origin !== window.location.origin) return;
       if (event.data.type === 'TWITTER_PROFILE') {
-        setTwitterProfile(event.data.profile);
-        setShowProfileForm(true);
+        if (event.data.profile) {
+          setTwitterProfile(event.data.profile);
+          setShowProfileForm(true);
+        } else {
+          console.error('Twitter profile data missing in callback:', event.data);
+        }
       } else if (event.data.type === 'TWITTER_ERROR') {
         console.error('Twitter error:', event.data.error);
+        alert('Twitter authentication failed: ' + event.data.error);
       }
     };
     window.addEventListener('message', handleMessage);
