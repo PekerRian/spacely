@@ -24,13 +24,25 @@
     };
 
     // Auto-send profile to opener immediately (helps avoid race conditions)
-    try {
-      if (window.opener && !window.opener.closed) {
-        window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, '*');
+    console.log('[twitter-auth-success] popup params:', Object.fromEntries(params.entries()));
+    let attempts = 0;
+    const maxAttempts = 10;
+    const interval = setInterval(() => {
+      attempts += 1;
+      try {
+        console.log(`[twitter-auth-success] attempt ${attempts} to postMessage`, profile);
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, '*');
+        } else {
+          console.warn('[twitter-auth-success] opener not available or closed');
+        }
+      } catch (err) {
+        console.error('[twitter-auth-success] Failed to postMessage to opener:', err);
       }
-    } catch (err) {
-      console.error('Failed to postMessage to opener:', err);
-    }
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+      }
+    }, 500);
 
     document.getElementById('returnBtn').onclick = function() {
       try {
