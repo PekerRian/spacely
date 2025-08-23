@@ -32,6 +32,7 @@ export function WalletConnect() {
       if (connected && account?.address) {
         try {
           const exists = await checkProfile(account.address);
+          console.log(`[WalletConnect] Wallet ${account.address} profile exists:`, exists);
           setShowProfileForm(!exists);
         } catch (err) {
           setError('Error checking profile: ' + (err?.message || err));
