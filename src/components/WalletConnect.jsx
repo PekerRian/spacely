@@ -12,48 +12,25 @@ export function WalletConnect() {
   const [twitterProfile, setTwitterProfile] = useState(null);
   const { checkProfile, createProfile } = useProfileContract();
 
-  const generateCodeChallenge = async (verifier) => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(verifier);
-    const digest = await crypto.subtle.digest('SHA-256', data);
-    return btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/=/g, '')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_');
-  };
-
+  // Use backend for Twitter OAuth flow
   const handleTwitterAuth = async () => {
     try {
-      const state = crypto.randomUUID();
-      const codeVerifier = crypto.randomUUID() + crypto.randomUUID();
-      const codeChallenge = await generateCodeChallenge(codeVerifier);
-      
-      // Store these for validation in callback
-      sessionStorage.setItem('twitter_state', state);
-      sessionStorage.setItem('twitter_verifier', codeVerifier);
-
-      const params = new URLSearchParams({
-        response_type: 'code',
-        client_id: 'Ym5VZ2lEakdpa3l0MEh3T1Z6UVg6MTpjaQ',
-        redirect_uri: window.location.origin,
-        scope: 'users.read tweet.read',
-        state: state,
-        code_challenge: codeChallenge,
-        code_challenge_method: 'S256'
+      const response = await fetch('https://spacely-blush.vercel.app/api/auth/twitter/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ walletAddress: account?.address })
       });
-
-      const width = 600;
-      const height = 600;
-      const left = window.screenX + (window.outerWidth - width) / 2;
-      const top = window.screenY + (window.outerHeight - height) / 2;
-      
-      window.open(
-        `https://twitter.com/i/oauth2/authorize?${params.toString()}`,
-        'twitter-auth',
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
+      const data = await response.json();
+      if (data.authUrl) {
+        const width = 600;
+        const height = 600;
+        const left = window.screenX + (window.outerWidth - width) / 2;
+        const top = window.screenY + (window.outerHeight - height) / 2;
+        window.open(data.authUrl, 'twitter-auth', `width=${width},height=${height},left=${left},top=${top}`);
+      } else {
+        setError('Failed to get Twitter auth URL');
+      }
     } catch (error) {
-      console.error('Error initiating Twitter auth:', error);
       setError(error.message);
     }
   };
@@ -91,18 +68,23 @@ export function WalletConnect() {
 
   // Handle Twitter OAuth response
   useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.origin !== window.location.origin) return;
-      
-      if (event.data.type === 'TWITTER_PROFILE') {
-        handleTwitterProfile(event.data.profile);
-      } else if (event.data.type === 'TWITTER_ERROR') {
-        setError(event.data.error);
+    // Listen for Twitter OAuth callback via URL params
+    const checkTwitterCallback = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('auth') === 'success') {
+        const twitterProfile = {
+          handle: params.get('twitterUsername'),
+          url: `https://twitter.com/${params.get('twitterUsername')}`,
+          name: params.get('twitterUsername'),
+          bio: '',
+        };
+        setTwitterProfile(twitterProfile);
+        setShowProfileForm(true);
+      } else if (params.get('auth') === 'error') {
+        setError(params.get('error'));
       }
     };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    checkTwitterCallback();
   }, [connected, account?.address]);
 
   // Start Twitter auth after wallet connection
