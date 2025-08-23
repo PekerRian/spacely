@@ -23,6 +23,15 @@ export function WalletConnect() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ walletAddress: account?.address })
       });
+      if (!response.ok) {
+        const text = await response.text();
+        let jsonErr = null;
+        try { jsonErr = JSON.parse(text); } catch (e) {}
+        const errMsg = jsonErr?.error || text || `HTTP ${response.status}`;
+        console.error('[WalletConnect] /api/auth/twitter/start error:', errMsg, jsonErr || text);
+        setError(errMsg);
+        return;
+      }
       const data = await response.json();
       if (data.authUrl) {
         const width = 600;
@@ -31,7 +40,9 @@ export function WalletConnect() {
         const top = window.screenY + (window.outerHeight - height) / 2;
         window.open(data.authUrl, 'twitter-auth', `width=${width},height=${height},left=${left},top=${top}`);
       } else {
-        setError('Failed to get Twitter auth URL');
+        const msg = data?.error || 'Failed to get Twitter auth URL';
+        console.error('[WalletConnect] unexpected response from start:', data);
+        setError(msg);
       }
     } catch (error) {
       setError(error.message);

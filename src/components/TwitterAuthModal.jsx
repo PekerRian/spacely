@@ -46,6 +46,15 @@ export function TwitterAuthModal({ isOpen, onClose, walletAddress, onTwitterSucc
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ walletAddress }) // pass walletAddress if needed
       });
+      if (!response.ok) {
+        const text = await response.text();
+        let jsonErr = null;
+        try { jsonErr = JSON.parse(text); } catch (e) {}
+        const errMsg = jsonErr?.error || text || `HTTP ${response.status}`;
+        console.error('[TwitterAuthModal] /api/auth/twitter/start error:', errMsg, jsonErr || text);
+        setLoginError(errMsg);
+        return;
+      }
       const data = await response.json();
       if (data.authUrl) {
         const width = 600;
@@ -58,7 +67,7 @@ export function TwitterAuthModal({ isOpen, onClose, walletAddress, onTwitterSucc
           `width=${width},height=${height},left=${left},top=${top}`
         );
       } else {
-        setLoginError('Failed to get Twitter auth URL from backend.');
+        setLoginError(data?.error || 'Failed to get Twitter auth URL from backend.');
       }
     } catch (error) {
       console.error('Twitter login error:', error);
