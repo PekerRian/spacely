@@ -23,7 +23,7 @@
       profile_image_url: params.get('twitterProfileImageUrl') || '' // <-- add this line
     };
     document.getElementById('returnBtn').onclick = function() {
-      window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, window.origin);
+  window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, '*');
       window.close();
     };
   </script>
