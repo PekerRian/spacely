@@ -15,13 +15,42 @@
   <script>
     // Replace these with actual values from your backend or query params
     const params = new URLSearchParams(window.location.search);
-    const profile = {
-      handle: params.get('twitterUsername'),
-      url: params.get('twitterUsername') ? `https://twitter.com/${params.get('twitterUsername')}` : '',
-      name: params.get('twitterName') || params.get('twitterUsername'),
-      bio: params.get('twitterBio') || '',
-      profile_image_url: params.get('twitterProfileImageUrl') || '' // <-- add this line
-    };
+
+    // Helper to build normalized profile object
+    const buildProfileFromData = (data) => ({
+      handle: data.screen_name || data.twitterUsername || data.handle || null,
+      url: data.screen_name ? `https://twitter.com/${data.screen_name}` : (data.url || ''),
+      name: data.name || data.twitterName || data.handle || '',
+      bio: data.description || data.twitterBio || data.bio || '',
+      profile_image_url: data.profile_image_url_https || data.twitterProfileImageUrl || data.profile_image_url || ''
+    });
+
+    let profile = buildProfileFromData(Object.fromEntries(params.entries()));
+
+    // If popup only has oauth_token and oauth_verifier, ask backend to finish the OAuth exchange
+    if ((!profile.handle || profile.handle === null) && params.get('oauth_token') && params.get('oauth_verifier')) {
+      (async () => {
+        try {
+          console.log('[twitter-auth-success] completing oauth via backend');
+          const resp = await fetch('/api/auth/twitter/complete', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oauth_token: params.get('oauth_token'), oauth_verifier: params.get('oauth_verifier') })
+          });
+          if (resp.ok) {
+            const json = await resp.json();
+            const twitterData = json.twitterData || json;
+            profile = buildProfileFromData(twitterData);
+            console.log('[twitter-auth-success] got twitterData from backend:', twitterData);
+          } else {
+            console.error('[twitter-auth-success] backend complete failed', resp.status, await resp.text());
+          }
+        } catch (err) {
+          console.error('[twitter-auth-success] error calling backend complete:', err);
+        }
+      })();
+    }
 
     // Auto-send profile to opener immediately (helps avoid race conditions)
     console.log('[twitter-auth-success] popup params:', Object.fromEntries(params.entries()));

@@ -124,6 +124,49 @@ app.get('/api/auth/twitter/callback', async (req, res) => {
   );
 });
 
+// Support completing OAuth via XHR from the popup (frontend receives only oauth params)
+app.post('/api/auth/twitter/complete', async (req, res) => {
+  const { oauth_token, oauth_verifier } = req.body || {};
+  if (!req.session || !req.session.oauthRequestTokenSecret) {
+    return res.status(400).json({ error: 'No OAuth session available' });
+  }
+
+  oauth.getOAuthAccessToken(
+    oauth_token,
+    req.session.oauthRequestTokenSecret,
+    oauth_verifier,
+    (error, oauthAccessToken, oauthAccessTokenSecret, results) => {
+      if (error) {
+        console.error('Failed to get access token (complete):', error);
+        return res.status(500).json({ error: 'Failed to get access token' });
+      }
+
+      try {
+        oauth.get(
+          'https://api.twitter.com/1.1/account/verify_credentials.json',
+          oauthAccessToken,
+          oauthAccessTokenSecret,
+          (error, data) => {
+            if (error) {
+              console.error('Failed to get user details (complete):', error);
+              return res.status(500).json({ error: 'Failed to get user details' });
+            }
+
+            const twitterData = JSON.parse(data);
+            const walletAddress = req.session.walletAddress;
+            // Clear session
+            req.session.destroy();
+            return res.json({ twitterData, walletAddress });
+          }
+        );
+      } catch (err) {
+        console.error('Error completing OAuth:', err);
+        return res.status(500).json({ error: 'Server error' });
+      }
+    }
+  );
+});
+
 // Start server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
