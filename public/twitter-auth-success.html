@@ -19,7 +19,8 @@
       handle: params.get('twitterUsername'),
       url: params.get('twitterUsername') ? `https://twitter.com/${params.get('twitterUsername')}` : '',
       name: params.get('twitterName') || params.get('twitterUsername'),
-      bio: params.get('twitterBio') || ''
+      bio: params.get('twitterBio') || '',
+      profile_image_url: params.get('twitterProfileImageUrl') || '' // <-- add this line
     };
     document.getElementById('returnBtn').onclick = function() {
       window.opener.postMessage({ type: 'TWITTER_PROFILE', profile }, window.origin);
