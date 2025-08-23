@@ -29,12 +29,27 @@ export default async function handler(req, res) {
   const { walletAddress } = req.body || {};
   if (!walletAddress) return res.status(400).json({ error: 'walletAddress required' });
 
+  // Quick config checks to help debug serverless 500s
+  if (!process.env.TWITTER_API_KEY || !process.env.TWITTER_API_SECRET || !process.env.TWITTER_CALLBACK_URL) {
+    console.error('[api/auth/twitter/start] Missing required Twitter env vars', {
+      hasKey: !!process.env.TWITTER_API_KEY,
+      hasSecret: !!process.env.TWITTER_API_SECRET,
+      hasCallback: !!process.env.TWITTER_CALLBACK_URL
+    });
+    return res.status(500).json({ error: 'Server misconfigured: missing TWITTER_API_KEY, TWITTER_API_SECRET or TWITTER_CALLBACK_URL' });
+  }
+
   try {
     const { oauthToken, oauthTokenSecret } = await getRequestToken();
 
     // Persist the request token secret and wallet address in Vercel KV keyed by oauthToken
     // TTL set to 5 minutes
-    await kv.set(`oauth:${oauthToken}`, JSON.stringify({ oauthTokenSecret, walletAddress }), { ex: 300 });
+    try {
+      await kv.set(`oauth:${oauthToken}`, JSON.stringify({ oauthTokenSecret, walletAddress }), { ex: 300 });
+    } catch (kvErr) {
+      console.error('[api/auth/twitter/start] Vercel KV set error:', kvErr);
+      return res.status(500).json({ error: 'Vercel KV error', details: kvErr?.message || String(kvErr) });
+    }
 
     const authUrl = `https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}`;
     return res.json({ authUrl });
