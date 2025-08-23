@@ -39,6 +39,10 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!connected) {
+      alert('Please connect your wallet to create a profile.');
+      return;
+    }
     try {
       await createProfile(formData);
       onClose();
@@ -124,7 +128,7 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile }) 
             className="submit-button"
             disabled={loading || !connected}
           >
-            {loading ? 'Creating Profile...' : 'Create Profile'}
+            {loading ? 'Creating Profile...' : !connected ? 'Connect Wallet First' : 'Create Profile'}
           </button>
         </form>
       </div>
