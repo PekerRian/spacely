@@ -23,13 +23,24 @@ export default async function handler(req, res) {
       return;
     }
 
-    oauth.getOAuthRequestToken((error, oauthToken, oauthTokenSecret) => {
+    oauth.getOAuthRequestToken((error, oauthToken, oauthTokenSecret, results) => {
       if (error) {
-        res.status(500).json({ error: 'Failed to get request token', details: error });
+        console.error('OAuth request token error:', error);
+        console.error('Environment:', {
+          TWITTER_API_KEY: process.env.TWITTER_API_KEY,
+          TWITTER_API_SECRET: process.env.TWITTER_API_SECRET,
+          TWITTER_CALLBACK_URL: process.env.TWITTER_CALLBACK_URL
+        });
+        res.status(500).json({ error: 'Failed to get request token', details: error, env: {
+          TWITTER_API_KEY: !!process.env.TWITTER_API_KEY,
+          TWITTER_API_SECRET: !!process.env.TWITTER_API_SECRET,
+          TWITTER_CALLBACK_URL: process.env.TWITTER_CALLBACK_URL
+        }});
         return;
       }
       if (!oauthToken) {
-        res.status(500).json({ error: 'No OAuth token received from Twitter.' });
+        console.error('No OAuth token received from Twitter.', { results });
+        res.status(500).json({ error: 'No OAuth token received from Twitter.', results });
         return;
       }
       const authUrl = `https://api.twitter.com/oauth/authenticate?oauth_token=${oauthToken}`;
