@@ -96,9 +96,17 @@ app.get('/api/auth/twitter/callback', async (req, res) => {
             req.session.destroy();
 
             // Return Twitter data and wallet address to frontend
-            res.redirect(
-              `${process.env.FRONTEND_URL}?auth=success&twitterId=${twitterData.id_str}&twitterUsername=${twitterData.screen_name}&walletAddress=${walletAddress}`
-            );
+            // Add all required fields for the frontend popup
+            const params = new URLSearchParams({
+              auth: 'success',
+              twitterId: twitterData.id_str,
+              twitterUsername: twitterData.screen_name,
+              twitterName: twitterData.name || '',
+              twitterBio: twitterData.description || '',
+              twitterProfileImageUrl: twitterData.profile_image_url_https || twitterData.profile_image_url || '',
+              walletAddress: walletAddress || ''
+            });
+            res.redirect(`${process.env.FRONTEND_URL}?${params.toString()}`);
           }
         );
       } catch (error) {
