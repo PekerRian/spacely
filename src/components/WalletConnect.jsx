@@ -47,8 +47,8 @@ export function WalletConnect() {
         name: name || username,
         bio: description || '',
       });
-      // Redirect to user profile form page
-      navigate('/user');
+      setShowProfileForm(true);
+      // No navigation here; popup will close itself
     } catch (err) {
       console.error('Error handling Twitter profile:', err);
       setError(err.message);
