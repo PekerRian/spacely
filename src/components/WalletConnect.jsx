@@ -25,92 +25,50 @@ export function WalletConnect() {
       });
       if (!response.ok) {
         const text = await response.text();
-        let jsonErr = null;
-        try { jsonErr = JSON.parse(text); } catch (e) {}
-        const errMsg = jsonErr?.error || text || `HTTP ${response.status}`;
-        console.error('[WalletConnect] /api/auth/twitter/start error:', errMsg, jsonErr || text);
-        setError(errMsg);
-        return;
-      }
-      const data = await response.json();
-      if (data.authUrl) {
+      // PKCE Twitter OAuth2 flow client-side only
+      const handleTwitterAuth = async () => {
+        // 1. Generate code_verifier and code_challenge
+        const codeVerifier = generateRandomString(64);
+        const codeChallenge = await pkceChallengeFromVerifier(codeVerifier);
+        const state = generateRandomString(16);
+        sessionStorage.setItem('twitter_verifier', codeVerifier);
+        sessionStorage.setItem('twitter_state', state);
+        // 2. Build Twitter authorize URL
+        const params = new URLSearchParams({
+          response_type: 'code',
+          client_id: import.meta.env.VITE_TWITTER_CLIENT_ID,
+          redirect_uri: window.location.origin + '/twitter-callback',
+          scope: 'tweet.read users.read offline.access',
+          state,
+          code_challenge: codeChallenge,
+          code_challenge_method: 'S256',
+        });
+        const authUrl = `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
+        // 3. Open popup
         const width = 600;
         const height = 600;
         const left = window.screenX + (window.outerWidth - width) / 2;
         const top = window.screenY + (window.outerHeight - height) / 2;
-        window.open(data.authUrl, 'twitter-auth', `width=${width},height=${height},left=${left},top=${top}`);
-      } else {
-        const msg = data?.error || 'Failed to get Twitter auth URL';
-        setError(msg);
-    prevConnectedRef.current = connected;
-          const { twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
+        window.open(authUrl, 'twitter-auth', `width=${width},height=${height},left=${left},top=${top}`);
+      };
 
-          // New: Start PKCE Twitter OAuth2 flow client-side
-          const handleTwitterAuth = async () => {
-            // 1. Generate code_verifier and code_challenge
-            const codeVerifier = generateRandomString(64);
-            const codeChallenge = await pkceChallengeFromVerifier(codeVerifier);
-            const state = generateRandomString(16);
-            sessionStorage.setItem('twitter_verifier', codeVerifier);
-            sessionStorage.setItem('twitter_state', state);
-            // 2. Build Twitter authorize URL
-            const params = new URLSearchParams({
-              response_type: 'code',
-              client_id: import.meta.env.VITE_TWITTER_CLIENT_ID,
-              redirect_uri: window.location.origin + '/twitter-callback',
-              scope: 'tweet.read users.read offline.access',
-              state,
-              code_challenge: codeChallenge,
-              code_challenge_method: 'S256',
-            });
-            const authUrl = `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
-            // 3. Open popup
-            const width = 600;
-            const height = 600;
-            const left = window.screenX + (window.outerWidth - width) / 2;
-            const top = window.screenY + (window.outerHeight - height) / 2;
-            window.open(authUrl, 'twitter-auth', `width=${width},height=${height},left=${left},top=${top}`);
-          };
-
-          // Helper: PKCE
-          function generateRandomString(length) {
-            const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-            let result = '';
-            const array = new Uint8Array(length);
-            window.crypto.getRandomValues(array);
-            for (let i = 0; i < array.length; i++) {
-              result += charset[array[i] % charset.length];
-            }
-            return result;
-          }
-          async function pkceChallengeFromVerifier(v) {
-            const data = new TextEncoder().encode(v);
-            const digest = await window.crypto.subtle.digest('SHA-256', data);
-            return btoa(String.fromCharCode(...new Uint8Array(digest)))
-              .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-          }
-
-  }, [connected, account?.address, twitterProfile]);
-
-
-
-  const handleConnectWallet = async () => {
-    try {
-      if (connected) {
-        await disconnect();
-        setShowProfileForm(false);
-      } else {
-        setShowLoginModal(true);
+      // Helper: PKCE
+      function generateRandomString(length) {
+        const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+        let result = '';
+        const array = new Uint8Array(length);
+        window.crypto.getRandomValues(array);
+        for (let i = 0; i < array.length; i++) {
+          result += charset[array[i] % charset.length];
+        }
+        return result;
       }
-      setError(null);
-    } catch (err) {
-      console.error('Wallet connection error:', err);
-      setError(err.message);
-    }
-  };
-
-  const handlePetraConnect = async () => {
-    try {
+      async function pkceChallengeFromVerifier(v) {
+        const data = new TextEncoder().encode(v);
+        const digest = await window.crypto.subtle.digest('SHA-256', data);
+        return btoa(String.fromCharCode(...new Uint8Array(digest)))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      }
       if (!wallets || wallets.length === 0) {
         throw new Error('No wallets available');
       }

@@ -58,36 +58,7 @@ export function TwitterAuthModal({ isOpen, onClose, walletAddress, onTwitterSucc
       const data = await response.json();
       if (data.authUrl) {
         const width = 600;
-        const height = 600;
-        const left = window.screen.width / 2 - width / 2;
-        const top = window.screen.height / 2 - height / 2;
-        window.open(
-          data.authUrl,
-          'Twitter Login',
-          `width=${width},height=${height},left=${left},top=${top}`
-        );
-      } else {
-        setLoginError(data?.error || 'Failed to get Twitter auth URL from backend.');
-      }
-    } catch (error) {
-      console.error('Twitter login error:', error);
-      setLoginError('Failed to connect to Twitter. Please try again.');
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <button className="modal-close" onClick={onClose}>&times;</button>
-        <h2>Connect with Twitter</h2>
-        <p>Link your Twitter account to continue</p>
-        {loginError && (
-          <div className="error-message">
-            {loginError}
-          </div>
-        )}
+    // Handle PKCE client-only logic here if needed
         <button className="twitter-button" onClick={handleTwitterLogin}>
           <span className="twitter-icon">𝕏</span>
           Continue with Twitter

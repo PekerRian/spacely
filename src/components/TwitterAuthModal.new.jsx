@@ -69,24 +69,15 @@ export function TwitterAuthModal({ isOpen, onClose, walletAddress, onTwitterSucc
     }
   };
 
-  if (!isOpen) return null;
-
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content">
-        <button className="modal-close" onClick={onClose}>&times;</button>
-        <h2>Connect with Twitter</h2>
-        <p>Link your Twitter account to continue</p>
-        {loginError && (
-          <div className="error-message">
-            {loginError}
+                // Implement PKCE flow or remove if obsolete
+                const authUrl = `https://twitter.com/i/oauth2/authorize?${new URLSearchParams(params).toString()}`;
+                const width = 600;
+                const height = 600;
+                const left = window.screen.width / 2 - width / 2;
+                const top = window.screen.height / 2 - height / 2;
+                window.open(
+                  authUrl,
+                  'Twitter Login',
+                  `width=${width},height=${height},left=${left},top=${top}`
+                );
           </div>
-        )}
-        <button className="twitter-button" onClick={handleTwitterLogin}>
-          <span className="twitter-icon">𝕏</span>
-          Continue with Twitter
-        </button>
-      </div>
-    </div>
-  );
-}
