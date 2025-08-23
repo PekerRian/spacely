@@ -34,7 +34,6 @@ export function useProfileContract() {
   const createProfile = async (profileData) => {
     try {
       setLoading(true);
-      
       const payload = {
         type: 'entry_function_payload',
         function: 'spacely::profiles::create_profile',
@@ -47,10 +46,16 @@ export function useProfileContract() {
           profileData.twitter_url
         ],
       };
-
-      const response = await signAndSubmitTransaction(payload);
-      await response.wait();
-      return true;
+      // Defensive checks
+      if (!signAndSubmitTransaction) {
+        throw new Error('Wallet not connected or signAndSubmitTransaction not available');
+      }
+      if (!payload || !payload.function) {
+        throw new Error('Payload is not properly constructed');
+      }
+      console.log('Submitting profile payload:', payload);
+      const tx = await signAndSubmitTransaction(payload);
+      return tx;
     } catch (error) {
       console.error('Error creating profile:', error);
       throw error;
