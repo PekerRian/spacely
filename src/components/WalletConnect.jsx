@@ -7,6 +7,14 @@ import '../styles/modal.css';
 import { useNavigate } from 'react-router-dom';
 
 export function WalletConnect() {
+  const navigate = useNavigate();
+  const { connect, disconnect, account, wallets, connected } = useWallet();
+  const [showAddressMenu, setShowAddressMenu] = useState(false);
+  const [error, setError] = useState(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { checkProfile, createProfile } = useProfileContract();
+  const { twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
+
   // Handles wallet connect/disconnect button
   const handleConnectWallet = async () => {
     setError(null);
@@ -33,13 +41,6 @@ export function WalletConnect() {
     check();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected, account?.address]);
-  const navigate = useNavigate();
-  const { connect, disconnect, account, wallets, connected } = useWallet();
-  const [showAddressMenu, setShowAddressMenu] = useState(false);
-  const [error, setError] = useState(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const { checkProfile, createProfile } = useProfileContract();
-  const { twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
 
   // PKCE Twitter OAuth2 flow client-side only
   const handleTwitterAuth = async () => {
