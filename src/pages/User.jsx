@@ -10,6 +10,7 @@ export default function User() {
 
   useEffect(() => {
     const handleMessage = (event) => {
+      console.log('Received postMessage event:', event);
       if (event.origin !== window.location.origin) return;
       if (event.data.type === 'TWITTER_PROFILE') {
         if (event.data.profile) {
