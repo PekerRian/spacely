@@ -11,7 +11,6 @@ export default function User() {
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.origin !== window.location.origin) return;
-      
       if (event.data.type === 'TWITTER_PROFILE') {
         setTwitterProfile(event.data.profile);
         setShowProfileForm(true);
@@ -19,10 +18,16 @@ export default function User() {
         console.error('Twitter error:', event.data.error);
       }
     };
-
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
+
+  // Show form if twitterProfile is present after redirect
+  useEffect(() => {
+    if (twitterProfile && !showProfileForm) {
+      setShowProfileForm(true);
+    }
+  }, [twitterProfile, showProfileForm]);
   const [tab, setTab] = useState('badges');
 
   let content;
