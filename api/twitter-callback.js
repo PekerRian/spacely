@@ -63,7 +63,12 @@ export default async function handler(req, res) {
     const profileData = await profileRes.json();
     console.log('[twitter-callback] Profile response:', profileData);
     if (!profileRes.ok) {
-      return res.status(400).json({ error: profileData.error || 'Profile fetch failed' });
+      // Handle Twitter rate limit (429)
+      if (profileRes.status === 429) {
+        return res.status(429).json({ error: 'Twitter rate limit exceeded. Please wait a few minutes before trying again.' });
+      }
+      // Handle other errors
+      return res.status(400).json({ error: profileData.error || profileData.title || 'Profile fetch failed' });
     }
     return res.status(200).json({ profile: profileData.data });
   } catch (error) {

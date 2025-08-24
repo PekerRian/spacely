@@ -7,25 +7,20 @@ import '../styles/modal.css';
 import { useNavigate } from 'react-router-dom';
 
 export function WalletConnect() {
-  const { connect, disconnect, account, wallets, connected } = useWallet();
   const { twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
-  const navigate = useNavigate();
-
   // On mount, check for Twitter profile or error in sessionStorage (main window callback flow)
   useEffect(() => {
     const storedProfile = sessionStorage.getItem('twitter_profile');
     if (storedProfile) {
       try {
         const profile = JSON.parse(storedProfile);
-        // Only set if profile has an id or username
-        if (profile && (profile.id || profile.username || profile.handle)) {
-          setTwitterProfile({
-            ...profile,
-            url: `https://twitter.com/${profile.username || profile.handle || ''}`
-          });
-        }
+        setTwitterProfile({
+          ...profile,
+          url: `https://twitter.com/${profile.username || profile.handle || ''}`
+        });
+        setShowProfileForm(true);
       } catch (e) {
-        // ...existing code...
+        console.error('Failed to parse twitter_profile:', e);
       }
       sessionStorage.removeItem('twitter_profile');
     }
@@ -34,14 +29,9 @@ export function WalletConnect() {
       alert('Twitter authentication failed: ' + twitterError);
       sessionStorage.removeItem('twitter_error');
     }
-  }, [setTwitterProfile]);
-
-  // Show profile modal only when both wallet is connected and twitterProfile is set
-  useEffect(() => {
-    if (twitterProfile && connected) {
-      setShowProfileForm(true);
-    }
-  }, [twitterProfile, connected, setShowProfileForm]);
+  }, [setTwitterProfile, setShowProfileForm]);
+  const navigate = useNavigate();
+  const { connect, disconnect, account, wallets, connected } = useWallet();
   const [showAddressMenu, setShowAddressMenu] = useState(false);
   const [error, setError] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -65,7 +55,7 @@ export function WalletConnect() {
       if (connected && account?.address && !twitterProfile) {
         try {
           const exists = await checkProfile(account.address);
-          // ...existing code...
+          console.log(`[WalletConnect] Wallet ${account.address} profile exists:`, exists);
           setShowProfileForm(!exists);
         } catch (err) {
           setError('Error checking profile: ' + (err?.message || err));
@@ -86,7 +76,8 @@ export function WalletConnect() {
     const state = generateRandomString(16);
     sessionStorage.setItem('twitter_verifier', codeVerifier);
     sessionStorage.setItem('twitter_state', state);
-  // ...existing code...
+    // Debug log for env variable
+    console.log('TWITTER_CLIENT_ID:', import.meta.env.VITE_TWITTER_CLIENT_ID);
     // 3. Build Twitter authorize URL
     const params = new URLSearchParams({
       response_type: 'code',
@@ -108,8 +99,8 @@ export function WalletConnect() {
     const url = new URL(window.location.href);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
-    if (code && state) {
-      // Try POST first (for PKCE), fallback to GET if needed
+    // Only fetch if twitterProfile is not already set
+    if (code && state && !twitterProfile) {
       const codeVerifier = sessionStorage.getItem('twitter_verifier');
       const redirect_uri = window.location.origin + '/';
       const payload = codeVerifier
@@ -123,15 +114,13 @@ export function WalletConnect() {
           })
         : fetch(`/api/twitter-callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`);
       fetchProfile
-        .then(res => res.json())
+        .then(res => res.json().then(data => ({ status: res.status, ...data })))
         .then(data => {
           if (data.profile) {
-            // ...existing code...
             setTwitterProfile({
               ...data.profile,
               url: `https://twitter.com/${data.profile.username || data.profile.handle || ''}`
             });
-            // Restore previous route using React Router's navigate
             const prevRoute = sessionStorage.getItem('twitter_prev_route');
             if (prevRoute && window.location.pathname + window.location.search !== prevRoute) {
               navigate(prevRoute, { replace: true });
@@ -141,15 +130,20 @@ export function WalletConnect() {
               const modal = document.querySelector('.modal-overlay');
               if (modal) modal.focus();
             }, 100);
+          } else if (data.status === 429) {
+            setError('Twitter rate limit exceeded. Please wait a few minutes before trying again.');
+            setShowProfileForm(true);
           } else {
-            alert('Twitter authentication failed: ' + (data.error || 'Unknown error'));
+            setError('Twitter authentication failed: ' + (data.error || 'Unknown error'));
+            setShowProfileForm(true);
           }
         })
         .catch(e => {
-          alert('Twitter authentication failed: ' + e.message);
+          setError('Twitter authentication failed: ' + e.message);
+          setShowProfileForm(true);
         });
     }
-  }, [setTwitterProfile, setShowProfileForm]);
+  }, [setTwitterProfile, setShowProfileForm, twitterProfile, navigate]);
 
   // Helper: PKCE
   function generateRandomString(length) {
