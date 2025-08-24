@@ -17,12 +17,15 @@ export function WalletConnect() {
     if (storedProfile) {
       try {
         const profile = JSON.parse(storedProfile);
-        setTwitterProfile({
-          ...profile,
-          url: `https://twitter.com/${profile.username || profile.handle || ''}`
-        });
+        // Only set if profile has an id or username
+        if (profile && (profile.id || profile.username || profile.handle)) {
+          setTwitterProfile({
+            ...profile,
+            url: `https://twitter.com/${profile.username || profile.handle || ''}`
+          });
+        }
       } catch (e) {
-        console.error('Failed to parse twitter_profile:', e);
+        // ...existing code...
       }
       sessionStorage.removeItem('twitter_profile');
     }
