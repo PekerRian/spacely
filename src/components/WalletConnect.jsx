@@ -27,9 +27,10 @@ export function WalletConnect() {
   };
 
   // Check for profile existence when wallet connects
+  // Only open modal on wallet connect if Twitter profile is NOT present
   useEffect(() => {
     const check = async () => {
-      if (connected && account?.address) {
+      if (connected && account?.address && !twitterProfile) {
         try {
           const exists = await checkProfile(account.address);
           console.log(`[WalletConnect] Wallet ${account.address} profile exists:`, exists);
@@ -41,7 +42,7 @@ export function WalletConnect() {
     };
     check();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connected, account?.address]);
+  }, [connected, account?.address, twitterProfile]);
 
   // PKCE Twitter OAuth2 flow using serverless function
   const handleTwitterAuth = async () => {
