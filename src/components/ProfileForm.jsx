@@ -4,7 +4,7 @@ import { useWallet } from '../contexts/WalletContext';
 import '../styles/modal.css';
 
 export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, onTwitterAuth }) {
-  console.log('[ProfileForm] Rendered. twitterProfile prop:', twitterProfile);
+  // ...existing code...
   const { createProfile, loading } = useProfileContract();
   const { connected } = useWallet();
   const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
 
   // Update form when Twitter profile changes
   useEffect(() => {
-    console.log('twitterProfile in ProfileForm:', twitterProfile);
+  // ...existing code...
     if (twitterProfile) {
       setFormData(prev => ({
         username: twitterProfile.handle || prev.username,
@@ -53,15 +53,13 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
 
   if (!isOpen) return null;
 
-  // DEBUG BANNER
-  const debugProfile = twitterProfile ? JSON.stringify(twitterProfile) : 'No profile';
+  // ...existing code...
 
   return (
     <div className="modal-overlay" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.7)' }}>
       <div className="modal-content" style={{ zIndex: 10000, background: '#fff', color: '#111', border: '2px solid #ff0' }}>
         <div style={{ background: '#ff0', color: '#111', padding: '8px', marginBottom: '8px', fontWeight: 'bold', textAlign: 'center' }}>
-          DEBUG: ProfileForm modal is rendering<br />
-          Profile: {debugProfile}
+          {/* ...existing code... */}
         </div>
         <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Complete Your Profile</h2>

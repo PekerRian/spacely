@@ -49,7 +49,7 @@ function App() {
   useEffect(() => {
     // Listen for Twitter profile from popup (postMessage)
     const handleMessage = (event) => {
-      console.log('[App.jsx] Received postMessage event:', event);
+  // ...existing code...
       if (event.data && event.data.type === 'TWITTER_PROFILE') {
         const p = event.data.profile || {};
         const normalized = {
@@ -104,7 +104,7 @@ function App() {
         <Router>
           <div>
             <div style={{position:'fixed',top:0,left:0,width:'100vw',background:'#ff0',color:'#111',zIndex:99999,padding:'8px',fontWeight:'bold',textAlign:'center'}}>
-              DEBUG: App.jsx is rendering. showProfileForm={String(showProfileForm)} twitterProfile={twitterProfile ? JSON.stringify(twitterProfile) : 'null'}
+              {/* ...existing code... */}
             </div>
             <Starfield />
             <nav className="navbar">

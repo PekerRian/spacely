@@ -55,7 +55,7 @@ export function WalletConnect() {
       if (connected && account?.address && !twitterProfile) {
         try {
           const exists = await checkProfile(account.address);
-          console.log(`[WalletConnect] Wallet ${account.address} profile exists:`, exists);
+          // ...existing code...
           setShowProfileForm(!exists);
         } catch (err) {
           setError('Error checking profile: ' + (err?.message || err));
@@ -76,8 +76,7 @@ export function WalletConnect() {
     const state = generateRandomString(16);
     sessionStorage.setItem('twitter_verifier', codeVerifier);
     sessionStorage.setItem('twitter_state', state);
-    // Debug log for env variable
-    console.log('TWITTER_CLIENT_ID:', import.meta.env.VITE_TWITTER_CLIENT_ID);
+  // ...existing code...
     // 3. Build Twitter authorize URL
     const params = new URLSearchParams({
       response_type: 'code',
@@ -117,7 +116,7 @@ export function WalletConnect() {
         .then(res => res.json())
         .then(data => {
           if (data.profile) {
-            console.log('[WalletConnect] Twitter profile fetched:', data.profile);
+            // ...existing code...
             setTwitterProfile({
               ...data.profile,
               url: `https://twitter.com/${data.profile.username || data.profile.handle || ''}`
