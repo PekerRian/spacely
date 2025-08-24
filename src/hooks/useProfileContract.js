@@ -3,7 +3,8 @@ import { useWallet } from '../contexts/WalletContext';
 import { Types } from 'aptos';
 
 export function useProfileContract() {
-  const { account, signAndSubmitTransaction, connected } = useWallet();
+  const wallet = useWallet();
+  const { account, signAndSubmitTransaction, connected } = wallet;
   const [loading, setLoading] = useState(false);
 
   const checkProfile = async (address) => {
@@ -61,12 +62,52 @@ export function useProfileContract() {
       if (!signAndSubmitTransaction) {
         throw new Error('Wallet not connected or signAndSubmitTransaction not available');
       }
-      if (!payload || !payload.function) {
-        throw new Error('Payload is not properly constructed');
+      if (!payload || typeof payload !== 'object') {
+        throw new Error('Payload is not properly constructed (missing or not an object)');
       }
+      if (!('function' in payload) || typeof payload.function !== 'string') {
+        throw new Error('Payload.function is missing or not a string');
+      }
+
+      // Diagnostic logs to debug adapter behavior
+      console.debug('Preparing to call signAndSubmitTransaction. Diagnostics:');
+      console.debug('connected:', connected);
+      console.debug('account:', account);
+      try {
+          // Log wallet object and sign function for diagnostics
+          try { console.debug('wallet keys:', Object.keys(wallet)); } catch (e) { console.debug('wallet: [unserializable]'); }
+          console.debug('signAndSubmitTransaction typeof:', typeof signAndSubmitTransaction);
+          try { console.debug('signAndSubmitTransaction:', signAndSubmitTransaction.toString().slice(0, 200)); } catch (e) { console.debug('signAndSubmitTransaction: [function]'); }
+      } catch (diagErr) {
+        console.warn('Diagnostics failed:', diagErr);
+      }
+      console.debug('payload:', payload);
+        // Normalize payload.function: if it lacks a 0x address, try prefixing with account.address
+        try {
+          if (payload && typeof payload.function === 'string') {
+            // If it already has 0x prefix, leave as-is
+            if (!payload.function.startsWith('0x')) {
+              const parts = payload.function.split('::');
+              if (parts.length === 3) {
+                const moduleName = parts[1];
+                const fnName = parts[2];
+                const address = account?.address || '';
+                if (address) {
+                  payload.function = `${address}::${moduleName}::${fnName}`;
+                  console.debug('Normalized payload.function to include address:', payload.function);
+                }
+              }
+            }
+          }
+        } catch (normErr) {
+          console.warn('Failed to normalize payload.function', normErr);
+        }
       // Attempt to submit transaction. Some adapters expect the payload directly,
       // others may expect an object with a `transaction` key. Try both and provide
       // detailed logs for debugging.
+      if (typeof signAndSubmitTransaction !== 'function') {
+        throw new Error('signAndSubmitTransaction is not a function on the wallet adapter');
+      }
       try {
         const tx = await signAndSubmitTransaction(payload);
         return tx;
