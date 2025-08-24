@@ -7,6 +7,28 @@ import '../styles/modal.css';
 import { useNavigate } from 'react-router-dom';
 
 export function WalletConnect() {
+  // On mount, check for Twitter profile or error in sessionStorage (main window callback flow)
+  useEffect(() => {
+    const storedProfile = sessionStorage.getItem('twitter_profile');
+    if (storedProfile) {
+      try {
+        const profile = JSON.parse(storedProfile);
+        setTwitterProfile({
+          ...profile,
+          url: `https://twitter.com/${profile.username || profile.handle || ''}`
+        });
+        setShowProfileForm(true);
+      } catch (e) {
+        console.error('Failed to parse twitter_profile:', e);
+      }
+      sessionStorage.removeItem('twitter_profile');
+    }
+    const twitterError = sessionStorage.getItem('twitter_error');
+    if (twitterError) {
+      alert('Twitter authentication failed: ' + twitterError);
+      sessionStorage.removeItem('twitter_error');
+    }
+  }, [setTwitterProfile, setShowProfileForm]);
   const navigate = useNavigate();
   const { connect, disconnect, account, wallets, connected } = useWallet();
   const [showAddressMenu, setShowAddressMenu] = useState(false);

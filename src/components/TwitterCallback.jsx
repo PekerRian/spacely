@@ -24,14 +24,21 @@ export function TwitterCallback() {
         const data = await res.json();
         if (!res.ok || !data.profile) throw new Error(data.error || 'Failed to fetch Twitter profile');
 
+        sessionStorage.removeItem('twitter_state');
+        sessionStorage.removeItem('twitter_verifier');
+
         if (window.opener) {
+          // Popup flow
           window.opener.postMessage({
             type: 'TWITTER_PROFILE',
             profile: data.profile
           }, window.location.origin);
+          window.close();
+        } else {
+          // Main window flow
+          sessionStorage.setItem('twitter_profile', JSON.stringify(data.profile));
+          window.location.replace('/');
         }
-        sessionStorage.removeItem('twitter_state');
-        sessionStorage.removeItem('twitter_verifier');
       } catch (error) {
         console.error('Twitter callback error:', error);
         if (window.opener) {
@@ -39,9 +46,11 @@ export function TwitterCallback() {
             type: 'TWITTER_ERROR',
             error: error.message
           }, window.location.origin);
+          window.close();
+        } else {
+          sessionStorage.setItem('twitter_error', error.message);
+          window.location.replace('/');
         }
-      } finally {
-        window.close();
       }
     };
     handleCallback();
