@@ -34,7 +34,8 @@ export function useProfileContract() {
   const createProfile = async (profileData) => {
     try {
       setLoading(true);
-        if (!wallet || !wallet.account) {
+  const { account, signAndSubmitTransaction } = useWallet();
+  if (!account) {
           throw new Error('Wallet not connected');
         }
         // Defensive check for profileData
