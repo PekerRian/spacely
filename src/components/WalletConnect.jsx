@@ -67,8 +67,8 @@ export function WalletConnect() {
       code_challenge_method: 'S256',
     });
     const authUrl = `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
-    // 4. Redirect
-    window.location.href = authUrl;
+  // 4. Redirect in same tab (never use window.open)
+  window.location.href = authUrl;
   };
 
   // Handle Twitter OAuth2 callback (call serverless function)
