@@ -102,8 +102,6 @@ function App() {
       <TwitterAuthContext.Provider value={{ twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm }}>
         <Router>
           <div>
-            <div style={{position:'fixed',top:0,left:0,width:'100vw',background:'#ff0',color:'#111',zIndex:99999,padding:'8px',fontWeight:'bold',textAlign:'center'}}>
-            </div>
             <Starfield />
             <nav className="navbar">
               <div className="navbar-container">
