@@ -46,9 +46,10 @@ export function useProfileContract() {
       if (!profileData.username || !profileData.twitter_url) {
         throw new Error('Profile data missing required fields');
       }
+      // Format the transaction payload according to Aptos SDK spec
       const payload = {
-        type: 'entry_function_payload',
-        function: 'spacely::profiles::create_profile',
+        type: "entry_function_payload",
+        function: `${account.address}::profiles::create_profile`,
         type_arguments: [],
         arguments: [
           profileData.username,
@@ -56,7 +57,11 @@ export function useProfileContract() {
           profileData.profile_image || '',
           profileData.affiliation || '',
           profileData.twitter_url || ''
-        ],
+        ]
+      };
+      
+      const transaction = {
+        payload,
       };
       // Defensive checks
       if (!signAndSubmitTransaction) {
@@ -109,26 +114,13 @@ export function useProfileContract() {
         throw new Error('signAndSubmitTransaction is not a function on the wallet adapter');
       }
       try {
-        const tx = await signAndSubmitTransaction(payload);
+        // Try to submit the transaction with the properly structured payload
+        console.debug('Submitting transaction:', transaction);
+        const tx = await signAndSubmitTransaction(transaction);
         return tx;
       } catch (err) {
-        console.error('signAndSubmitTransaction failed with payload:', payload, err);
-        // Fallback: try calling with { transaction: payload }
-        try {
-          const tx2 = await signAndSubmitTransaction({ transaction: payload });
-          return tx2;
-        } catch (err2) {
-          console.error('Fallback signAndSubmitTransaction({ transaction }) also failed', err2);
-          // Final fallback: try { payload }
-          try {
-            const tx3 = await signAndSubmitTransaction({ payload });
-            return tx3;
-          } catch (err3) {
-            console.error('Fallback signAndSubmitTransaction({ payload }) also failed', err3);
-            // Re-throw original error for upstream handling
-            throw err;
-          }
-        }
+        console.error('Transaction submission failed:', err);
+        throw err;
       }
     } catch (error) {
       console.error('Error creating profile:', error);
