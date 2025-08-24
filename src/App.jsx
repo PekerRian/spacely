@@ -7,6 +7,7 @@ import Calendar from './pages/Calendar.jsx';
 import Ecosystem from './pages/Ecosystem.jsx';
 import { WalletProvider } from './contexts/WalletContext';
 import { WalletConnect } from './components/WalletConnect';
+import { ProfileForm } from './components/ProfileForm';
 
 // Context to share Twitter profile and form state
 
@@ -102,24 +103,33 @@ function App() {
     <WalletProvider>
       <TwitterAuthContext.Provider value={{ twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm }}>
         <Router>
-          <div>
-            <Starfield />
-            <nav className="navbar">
-              <div className="navbar-container">
-                <div className="navbar-links">
-                  <NavLink to="/user" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>👾 USER</NavLink>
-                  <NavLink to="/calendar" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>🛸 CALENDAR</NavLink>
-                  <NavLink to="/ecosystem" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>🚀 ECOSYSTEM</NavLink>
+          <>
+            <ProfileForm
+              isOpen={showProfileForm}
+              onClose={() => setShowProfileForm(false)}
+              walletAddress={null}
+              twitterProfile={twitterProfile}
+              onTwitterAuth={() => {}}
+            />
+            <div>
+              <Starfield />
+              <nav className="navbar">
+                <div className="navbar-container">
+                  <div className="navbar-links">
+                    <NavLink to="/user" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>👾 USER</NavLink>
+                    <NavLink to="/calendar" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>🛸 CALENDAR</NavLink>
+                    <NavLink to="/ecosystem" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>🚀 ECOSYSTEM</NavLink>
+                  </div>
+                  <WalletConnect />
                 </div>
-                <WalletConnect />
-              </div>
-            </nav>
-            <Routes>
-              <Route path="/user" element={<User />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/ecosystem" element={<Ecosystem />} />
-            </Routes>
-          </div>
+              </nav>
+              <Routes>
+                <Route path="/user" element={<User />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/ecosystem" element={<Ecosystem />} />
+              </Routes>
+            </div>
+          </>
         </Router>
       </TwitterAuthContext.Provider>
     </WalletProvider>
