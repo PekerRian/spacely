@@ -67,28 +67,34 @@ export function WalletConnect() {
   };
 
   // Handle Twitter OAuth2 callback (call serverless function)
+  // Remove sessionStorage dependency: always handle code/state in URL
   useEffect(() => {
     const url = new URL(window.location.href);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
-    const storedState = sessionStorage.getItem('twitter_state');
-    if (code && state && state === storedState) {
+    if (code && state) {
+      // Try POST first (for PKCE), fallback to GET if needed
       const codeVerifier = sessionStorage.getItem('twitter_verifier');
       const redirect_uri = window.location.origin + '/';
-      fetch('/api/twitter-callback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, code_verifier: codeVerifier, redirect_uri }),
-      })
+      const payload = codeVerifier
+        ? { code, code_verifier: codeVerifier, redirect_uri }
+        : null;
+      const fetchProfile = payload
+        ? fetch('/api/twitter-callback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+        : fetch(`/api/twitter-callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`);
+      fetchProfile
         .then(res => res.json())
         .then(data => {
           if (data.profile) {
-            // Auto-populate Twitter profile link
             setTwitterProfile({
               ...data.profile,
-              url: `https://twitter.com/${data.profile.username}`
+              url: `https://twitter.com/${data.profile.username || data.profile.handle || ''}`
             });
-            setShowProfileForm(true); // Show the form after Twitter login
+            setShowProfileForm(true);
           } else {
             alert('Twitter authentication failed: ' + (data.error || 'Unknown error'));
           }
@@ -96,7 +102,6 @@ export function WalletConnect() {
         .catch(e => {
           alert('Twitter authentication failed: ' + e.message);
         });
-      // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [setTwitterProfile, setShowProfileForm]);
