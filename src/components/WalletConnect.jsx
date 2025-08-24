@@ -7,7 +7,10 @@ import '../styles/modal.css';
 import { useNavigate } from 'react-router-dom';
 
 export function WalletConnect() {
+  const { connect, disconnect, account, wallets, connected } = useWallet();
   const { twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
+  const navigate = useNavigate();
+
   // On mount, check for Twitter profile or error in sessionStorage (main window callback flow)
   useEffect(() => {
     const storedProfile = sessionStorage.getItem('twitter_profile');
@@ -36,8 +39,6 @@ export function WalletConnect() {
       setShowProfileForm(true);
     }
   }, [twitterProfile, connected, setShowProfileForm]);
-  const navigate = useNavigate();
-  const { connect, disconnect, account, wallets, connected } = useWallet();
   const [showAddressMenu, setShowAddressMenu] = useState(false);
   const [error, setError] = useState(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
