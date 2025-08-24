@@ -91,11 +91,17 @@ export function WalletConnect() {
         .then(res => res.json())
         .then(data => {
           if (data.profile) {
+            console.log('[WalletConnect] Twitter profile fetched:', data.profile);
             setTwitterProfile({
               ...data.profile,
               url: `https://twitter.com/${data.profile.username || data.profile.handle || ''}`
             });
             setShowProfileForm(true);
+            // Focus the modal for accessibility
+            setTimeout(() => {
+              const modal = document.querySelector('.modal-overlay');
+              if (modal) modal.focus();
+            }, 100);
           } else {
             alert('Twitter authentication failed: ' + (data.error || 'Unknown error'));
           }
