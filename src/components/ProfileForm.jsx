@@ -52,7 +52,7 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
   if (!isOpen) return null;
   return (
     <div className="modal-overlay" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.7)' }}>
-      <div className="modal-content" style={{ zIndex: 10000, background: '#fff', color: '#111' }}>
+          <div className="modal-content" style={{ zIndex: 10000, background: 'linear-gradient(135deg, #1a2236 60%, #232946 100%)', color: '#e0e6f6', borderRadius: '18px', boxShadow: '0 4px 32px 0 #23294688', padding: '32px 24px', maxWidth: '400px', margin: '40px auto', position: 'relative' }}>
         <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Complete Your Profile</h2>
         {!connected && (
@@ -73,18 +73,19 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
               required
             />
           </div>
-          <div className="form-group">
-            <label>Bio</label>
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              className="form-control"
-              placeholder="Tell us about yourself"
-              rows="3"
-              required
-            />
-          </div>
+              <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontWeight: 500, color: '#e0e6f6' }}>Bio</label>
+                <textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange}
+                  className="form-control"
+                  placeholder="Tell us about yourself"
+                  rows="3"
+                  required
+                  style={{ background: '#232946', color: '#e0e6f6', border: '1px solid #2d3250', borderRadius: '8px', padding: '8px' }}
+                />
+              </div>
           <div className="form-group" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <label>Profile Image</label>
             {formData.profile_image && (
@@ -125,13 +126,9 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
               Connect Twitter
             </button>
           </div>
-          <button 
-            type="submit" 
-            className="submit-button"
-            disabled={loading || !connected}
-          >
-            {loading ? 'Creating Profile...' : !connected ? 'Connect Wallet First' : 'Create Profile'}
-          </button>
+              <button type="submit" className="submit-button" disabled={loading} style={{ background: 'linear-gradient(90deg, #6c63ff 0%, #232946 100%)', color: '#fff', border: 'none', borderRadius: '8px', padding: '12px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', boxShadow: '0 2px 8px #23294644' }}>
+                {loading ? 'Saving...' : 'Save Profile'}
+              </button>
         </form>
       </div>
     </div>
