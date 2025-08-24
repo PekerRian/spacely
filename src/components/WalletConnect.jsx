@@ -75,7 +75,6 @@ export function WalletConnect() {
     if (code && state && state === storedState) {
       const codeVerifier = sessionStorage.getItem('twitter_verifier');
       const redirect_uri = window.location.origin + '/';
-      // Exchange code for profile via serverless function
       fetch('/api/twitter-callback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -84,7 +83,12 @@ export function WalletConnect() {
         .then(res => res.json())
         .then(data => {
           if (data.profile) {
-            setTwitterProfile(data.profile);
+            // Auto-populate Twitter profile link
+            setTwitterProfile({
+              ...data.profile,
+              url: `https://twitter.com/${data.profile.username}`
+            });
+            setShowProfileForm(true); // Show the form after Twitter login
           } else {
             alert('Twitter authentication failed: ' + (data.error || 'Unknown error'));
           }
@@ -95,7 +99,7 @@ export function WalletConnect() {
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [setTwitterProfile]);
+  }, [setTwitterProfile, setShowProfileForm]);
 
   // Helper: PKCE
   function generateRandomString(length) {
