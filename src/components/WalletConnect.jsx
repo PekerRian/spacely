@@ -18,7 +18,6 @@ export function WalletConnect() {
           ...profile,
           url: `https://twitter.com/${profile.username || profile.handle || ''}`
         });
-        setShowProfileForm(true);
       } catch (e) {
         console.error('Failed to parse twitter_profile:', e);
       }
@@ -29,7 +28,14 @@ export function WalletConnect() {
       alert('Twitter authentication failed: ' + twitterError);
       sessionStorage.removeItem('twitter_error');
     }
-  }, [setTwitterProfile, setShowProfileForm]);
+  }, [setTwitterProfile]);
+
+  // Show profile modal only when both wallet is connected and twitterProfile is set
+  useEffect(() => {
+    if (twitterProfile && connected) {
+      setShowProfileForm(true);
+    }
+  }, [twitterProfile, connected, setShowProfileForm]);
   const navigate = useNavigate();
   const { connect, disconnect, account, wallets, connected } = useWallet();
   const [showAddressMenu, setShowAddressMenu] = useState(false);
