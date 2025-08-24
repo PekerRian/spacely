@@ -3,7 +3,7 @@ import { useWallet } from '../contexts/WalletContext';
 import { Types } from 'aptos';
 
 export function useProfileContract() {
-  const { signAndSubmitTransaction, connected } = useWallet();
+  const { account, signAndSubmitTransaction, connected } = useWallet();
   const [loading, setLoading] = useState(false);
 
   const checkProfile = async (address) => {
@@ -34,30 +34,29 @@ export function useProfileContract() {
   const createProfile = async (profileData) => {
     try {
       setLoading(true);
-  const { account, signAndSubmitTransaction } = useWallet();
-  if (!account) {
-          throw new Error('Wallet not connected');
-        }
-        // Defensive check for profileData
-        if (!profileData || typeof profileData !== 'object') {
-          throw new Error('Profile data is missing or invalid');
-        }
-        // Check required fields
-        if (!profileData.username || !profileData.twitter_url) {
-          throw new Error('Profile data missing required fields');
-        }
-        const payload = {
-          type: 'entry_function_payload',
-          function: 'spacely::profiles::create_profile',
-          type_arguments: [],
-          arguments: [
-            profileData.username,
-            profileData.bio || '',
-            profileData.profile_image || '',
-            profileData.affiliation || '',
-            profileData.twitter_url || ''
-          ],
-        };
+      if (!account) {
+        throw new Error('Wallet not connected');
+      }
+      // Defensive check for profileData
+      if (!profileData || typeof profileData !== 'object') {
+        throw new Error('Profile data is missing or invalid');
+      }
+      // Check required fields
+      if (!profileData.username || !profileData.twitter_url) {
+        throw new Error('Profile data missing required fields');
+      }
+      const payload = {
+        type: 'entry_function_payload',
+        function: 'spacely::profiles::create_profile',
+        type_arguments: [],
+        arguments: [
+          profileData.username,
+          profileData.bio || '',
+          profileData.profile_image || '',
+          profileData.affiliation || '',
+          profileData.twitter_url || ''
+        ],
+      };
       // Defensive checks
       if (!signAndSubmitTransaction) {
         throw new Error('Wallet not connected or signAndSubmitTransaction not available');
