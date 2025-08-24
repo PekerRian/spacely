@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useWallet } from '../contexts/WalletContext';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Types } from 'aptos';
 
 export function useProfileContract() {
@@ -46,22 +46,17 @@ export function useProfileContract() {
       if (!profileData.username || !profileData.twitter_url) {
         throw new Error('Profile data missing required fields');
       }
-      // Format the transaction payload according to Aptos SDK spec
-      const payload = {
+      const transaction = {
         type: "entry_function_payload",
         function: `${account.address}::profiles::create_profile`,
-        type_arguments: [],
         arguments: [
           profileData.username,
           profileData.bio || '',
           profileData.profile_image || '',
           profileData.affiliation || '',
           profileData.twitter_url || ''
-        ]
-      };
-      
-      const transaction = {
-        payload,
+        ],
+        type_arguments: []
       };
       // Defensive checks
       if (!signAndSubmitTransaction) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useProfileContract } from '../hooks/useProfileContract';
-import { useWallet } from '../contexts/WalletContext';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import '../styles/modal.css';
 
 export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, onTwitterAuth }) {

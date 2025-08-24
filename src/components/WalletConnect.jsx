@@ -1,4 +1,4 @@
-import { useWallet } from '../contexts/WalletContext';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useState, useEffect, useContext, useRef } from 'react';
 import { TwitterAuthContext } from '../contexts/TwitterAuthContext';
 import { ProfileForm } from './ProfileForm';
