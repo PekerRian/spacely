@@ -33,13 +33,21 @@ export default async function handler(req, res) {
     redirect_uri,
     code_verifier,
     client_id: process.env.TWITTER_CLIENT_ID,
-    client_secret: process.env.TWITTER_CLIENT_SECRET,
+    // Do NOT include client_secret in body for PKCE
   });
+
+  // Prepare Basic Auth header
+  const basicAuth = Buffer.from(
+    `${process.env.TWITTER_CLIENT_ID}:${process.env.TWITTER_CLIENT_SECRET}`
+  ).toString('base64');
 
   try {
     const tokenRes = await fetch('https://api.twitter.com/2/oauth2/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${basicAuth}`
+      },
       body: params.toString(),
     });
     const tokenData = await tokenRes.json();
