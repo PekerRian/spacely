@@ -1,80 +1,37 @@
+
 import { useEffect } from 'react';
 
 export function TwitterCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get the authorization code from URL (either query params or hash)
         const params = new URLSearchParams(window.location.search || window.location.hash.substring(1));
         const code = params.get('code');
         const state = params.get('state');
         const storedState = sessionStorage.getItem('twitter_state');
         const codeVerifier = sessionStorage.getItem('twitter_verifier');
+        const redirect_uri = window.location.origin + '/';
 
-        if (!code) {
-          throw new Error('No authorization code received');
-        }
+        if (!code) throw new Error('No authorization code received');
+        if (state !== storedState) throw new Error('State mismatch - possible CSRF attack');
 
-        if (state !== storedState) {
-          throw new Error('State mismatch - possible CSRF attack');
-        }
-
-        // Exchange code for token
-
-        const tokenParams = new URLSearchParams({
-          code: code,
-          grant_type: 'authorization_code',
-          client_id: import.meta.env.VITE_TWITTER_CLIENT_ID,
-          redirect_uri: window.location.origin + '/twitter-callback',
-          code_verifier: codeVerifier
-        });
-
-        const tokenResponse = await fetch('https://api.twitter.com/2/oauth2/token', {
+        // POST to serverless function
+        const res = await fetch('/api/twitter-callback', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: tokenParams
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, code_verifier: codeVerifier, redirect_uri })
         });
-
-        if (!tokenResponse.ok) {
-          const error = await tokenResponse.text();
-          throw new Error(`Failed to get access token: ${error}`);
-        }
-
-        const tokenData = await tokenResponse.json();
-        
-        // Send token back to main window
-        // Get user profile data with additional fields
-        const userResponse = await fetch('https://api.twitter.com/2/users/me?user.fields=url,username,name,profile_image_url,description', {
-          headers: {
-            'Authorization': `Bearer ${tokenData.access_token}`
-          }
-        });
-
-        if (!userResponse.ok) {
-          throw new Error('Failed to fetch Twitter profile');
-        }
-
-        const userData = await userResponse.json();
+        const data = await res.json();
+        if (!res.ok || !data.profile) throw new Error(data.error || 'Failed to fetch Twitter profile');
 
         if (window.opener) {
           window.opener.postMessage({
             type: 'TWITTER_PROFILE',
-            profile: {
-              handle: userData.data.username,
-              bio: userData.data.description,
-              url: userData.data.url || `https://twitter.com/${userData.data.username}`,
-              name: userData.data.name,
-              profile_image: userData.data.profile_image_url
-            }
+            profile: data.profile
           }, window.location.origin);
         }
-
-        // Clean up
         sessionStorage.removeItem('twitter_state');
         sessionStorage.removeItem('twitter_verifier');
-        
       } catch (error) {
         console.error('Twitter callback error:', error);
         if (window.opener) {
@@ -84,13 +41,10 @@ export function TwitterCallback() {
           }, window.location.origin);
         }
       } finally {
-        // Close the popup
         window.close();
       }
     };
-
     handleCallback();
   }, []);
-
   return <div>Processing Twitter login...</div>;
 }
