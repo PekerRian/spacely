@@ -54,6 +54,8 @@ export function WalletConnect() {
     const state = generateRandomString(16);
     sessionStorage.setItem('twitter_verifier', codeVerifier);
     sessionStorage.setItem('twitter_state', state);
+    // Debug log for env variable
+    console.log('TWITTER_CLIENT_ID:', import.meta.env.VITE_TWITTER_CLIENT_ID);
     // 3. Build Twitter authorize URL
     const params = new URLSearchParams({
       response_type: 'code',
