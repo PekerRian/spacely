@@ -43,12 +43,19 @@ export function useProfileContract() {
         throw new Error('Username and Twitter URL are required');
       }
 
+      if (!account.address) {
+        throw new Error('Wallet address not available');
+      }
+
+      // Ensure the address has the 0x prefix
+      const address = account.address.startsWith('0x') ? account.address : `0x${account.address}`;
+      
       const transaction = {
         type: "entry_function_payload",
-        function: `${account.address}::profiles::create_profile`,
+        function: `${address}::profiles::create_profile`,
         type_arguments: [],
         arguments: [
-          profileData.username,
+          profileData.username || '',
           profileData.bio || '',
           profileData.profile_image || '',
           profileData.affiliation || '',
@@ -60,8 +67,9 @@ export function useProfileContract() {
         throw new Error('signAndSubmitTransaction is not available');
       }
 
+      console.log('Submitting transaction:', transaction);
       const pendingTransaction = await signAndSubmitTransaction(transaction);
-      console.log('pendingTransaction', pendingTransaction);
+      console.log('Transaction submitted:', pendingTransaction);
       return pendingTransaction.hash;
 
     } catch (error) {
