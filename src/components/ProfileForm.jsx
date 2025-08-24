@@ -53,9 +53,16 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
 
   if (!isOpen) return null;
 
+  // DEBUG BANNER
+  const debugProfile = twitterProfile ? JSON.stringify(twitterProfile) : 'No profile';
+
   return (
-    <div className="modal-overlay">
-      <div className="modal-content">
+    <div className="modal-overlay" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.7)' }}>
+      <div className="modal-content" style={{ zIndex: 10000, background: '#fff', color: '#111', border: '2px solid #ff0' }}>
+        <div style={{ background: '#ff0', color: '#111', padding: '8px', marginBottom: '8px', fontWeight: 'bold', textAlign: 'center' }}>
+          DEBUG: ProfileForm modal is rendering<br />
+          Profile: {debugProfile}
+        </div>
         <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Complete Your Profile</h2>
         {!connected && (
