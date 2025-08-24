@@ -64,8 +64,31 @@ export function useProfileContract() {
       if (!payload || !payload.function) {
         throw new Error('Payload is not properly constructed');
       }
-      const tx = await signAndSubmitTransaction(payload);
-      return tx;
+      // Attempt to submit transaction. Some adapters expect the payload directly,
+      // others may expect an object with a `transaction` key. Try both and provide
+      // detailed logs for debugging.
+      try {
+        const tx = await signAndSubmitTransaction(payload);
+        return tx;
+      } catch (err) {
+        console.error('signAndSubmitTransaction failed with payload:', payload, err);
+        // Fallback: try calling with { transaction: payload }
+        try {
+          const tx2 = await signAndSubmitTransaction({ transaction: payload });
+          return tx2;
+        } catch (err2) {
+          console.error('Fallback signAndSubmitTransaction({ transaction }) also failed', err2);
+          // Final fallback: try { payload }
+          try {
+            const tx3 = await signAndSubmitTransaction({ payload });
+            return tx3;
+          } catch (err3) {
+            console.error('Fallback signAndSubmitTransaction({ payload }) also failed', err3);
+            // Re-throw original error for upstream handling
+            throw err;
+          }
+        }
+      }
     } catch (error) {
       console.error('Error creating profile:', error);
       throw error;
