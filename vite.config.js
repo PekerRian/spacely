@@ -11,25 +11,17 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-    },
-    extensions: ['.mjs', '.js', '.jsx', '.json']
+    }
   },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'aptos-vendor': ['@aptos-labs/wallet-adapter-react', 'petra-plugin-wallet-adapter', 'aptos']
-        }
-      }
-    },
     sourcemap: true,
     commonjsOptions: {
-      include: [/node_modules/],
       transformMixedEsModules: true
     }
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', '@aptos-labs/wallet-adapter-react', 'petra-plugin-wallet-adapter', 'aptos']
+    esbuildOptions: {
+      target: 'es2020'
+    }
   }
 })
