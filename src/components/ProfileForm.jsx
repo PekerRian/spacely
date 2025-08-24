@@ -52,17 +52,9 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
   };
 
   if (!isOpen) return null;
-
-  // DEBUG BANNER
-  const debugProfile = twitterProfile ? JSON.stringify(twitterProfile) : 'No profile';
-
   return (
     <div className="modal-overlay" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.7)' }}>
-      <div className="modal-content" style={{ zIndex: 10000, background: '#fff', color: '#111', border: '2px solid #ff0' }}>
-        <div style={{ background: '#ff0', color: '#111', padding: '8px', marginBottom: '8px', fontWeight: 'bold', textAlign: 'center' }}>
-          DEBUG: ProfileForm modal is rendering<br />
-          Profile: {debugProfile}
-        </div>
+      <div className="modal-content" style={{ zIndex: 10000, background: '#fff', color: '#111' }}>
         <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Complete Your Profile</h2>
         {!connected && (
@@ -95,24 +87,15 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
               required
             />
           </div>
-          <div className="form-group">
+          <div className="form-group" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <label>Profile Image</label>
             {formData.profile_image && (
               <img
                 src={formData.profile_image}
                 alt="Profile"
-                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', marginBottom: '8px' }}
+                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', margin: '8px auto' }}
               />
             )}
-            <input
-              type="url"
-              name="profile_image"
-              value={formData.profile_image}
-              onChange={handleChange}
-              className="form-control"
-              placeholder="https://your-image-url.com"
-              required
-            />
           </div>
           <div className="form-group">
             <label>Affiliation</label>
