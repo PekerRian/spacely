@@ -100,6 +100,11 @@ export function WalletConnect() {
               ...data.profile,
               url: `https://twitter.com/${data.profile.username || data.profile.handle || ''}`
             });
+            // Restore previous route using React Router's navigate
+            const prevRoute = sessionStorage.getItem('twitter_prev_route');
+            if (prevRoute && window.location.pathname + window.location.search !== prevRoute) {
+              navigate(prevRoute, { replace: true });
+            }
             setShowProfileForm(true);
             setTimeout(() => {
               const modal = document.querySelector('.modal-overlay');
