@@ -98,18 +98,8 @@ export function WalletConnect() {
               ...data.profile,
               url: `https://twitter.com/${data.profile.username || data.profile.handle || ''}`
             });
-            // Restore previous route
-            const prevRoute = sessionStorage.getItem('twitter_prev_route');
-            if (prevRoute && window.location.pathname + window.location.search !== prevRoute) {
-              window.history.replaceState({}, document.title, prevRoute);
-            } else {
-              window.history.replaceState({}, document.title, window.location.pathname);
-            }
-            setShowProfileForm(true);
-            setTimeout(() => {
-              const modal = document.querySelector('.modal-overlay');
-              if (modal) modal.focus();
-            }, 100);
+            // Show a button to manually open the form
+            window.showTwitterFormButton = true;
           } else {
             alert('Twitter authentication failed: ' + (data.error || 'Unknown error'));
           }
@@ -200,6 +190,11 @@ export function WalletConnect() {
           </div>
         )}
       </button>
+      {window.showTwitterFormButton && (
+        <div style={{margin:'2em auto',textAlign:'center'}}>
+          <button style={{padding:'1em 2em',fontSize:'1.2em',background:'#1da1f2',color:'#fff',border:'none',borderRadius:'8px',cursor:'pointer'}} onClick={()=>{setShowProfileForm(true);window.showTwitterFormButton=false;}}>Open Twitter Profile Form</button>
+        </div>
+      )}
       {showLoginModal && (
         <div className="modal-overlay">
           <div className="modal">
