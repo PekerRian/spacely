@@ -46,13 +46,15 @@ export function WalletConnect() {
 
   // PKCE Twitter OAuth2 flow using serverless function
   const handleTwitterAuth = async () => {
-    // 1. Generate code_verifier and code_challenge
+    // 1. Save current route
+    sessionStorage.setItem('twitter_prev_route', window.location.pathname + window.location.search);
+    // 2. Generate code_verifier and code_challenge
     const codeVerifier = generateRandomString(64);
     const codeChallenge = await pkceChallengeFromVerifier(codeVerifier);
     const state = generateRandomString(16);
     sessionStorage.setItem('twitter_verifier', codeVerifier);
     sessionStorage.setItem('twitter_state', state);
-    // 2. Build Twitter authorize URL
+    // 3. Build Twitter authorize URL
     const params = new URLSearchParams({
       response_type: 'code',
       client_id: import.meta.env.VITE_TWITTER_CLIENT_ID,
@@ -63,7 +65,7 @@ export function WalletConnect() {
       code_challenge_method: 'S256',
     });
     const authUrl = `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
-    // 3. Redirect (or open popup)
+    // 4. Redirect
     window.location.href = authUrl;
   };
 
@@ -96,8 +98,14 @@ export function WalletConnect() {
               ...data.profile,
               url: `https://twitter.com/${data.profile.username || data.profile.handle || ''}`
             });
+            // Restore previous route
+            const prevRoute = sessionStorage.getItem('twitter_prev_route');
+            if (prevRoute && window.location.pathname + window.location.search !== prevRoute) {
+              window.history.replaceState({}, document.title, prevRoute);
+            } else {
+              window.history.replaceState({}, document.title, window.location.pathname);
+            }
             setShowProfileForm(true);
-            // Focus the modal for accessibility
             setTimeout(() => {
               const modal = document.querySelector('.modal-overlay');
               if (modal) modal.focus();
@@ -109,7 +117,6 @@ export function WalletConnect() {
         .catch(e => {
           alert('Twitter authentication failed: ' + e.message);
         });
-      window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [setTwitterProfile, setShowProfileForm]);
 
