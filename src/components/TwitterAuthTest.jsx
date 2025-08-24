@@ -30,7 +30,6 @@ export function TwitterAuthTest() {
       }
 
       const userData = await response.json();
-      console.log('Twitter User Data:', userData);
 
       // You can now use the user data as needed
       return userData;

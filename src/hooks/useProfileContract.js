@@ -4,7 +4,6 @@ import { Types } from 'aptos';
 
 export function useProfileContract() {
   const { signAndSubmitTransaction, connected } = useWallet();
-  console.log('Wallet context in useProfileContract:', { connected, signAndSubmitTransaction });
   const [loading, setLoading] = useState(false);
 
   const checkProfile = async (address) => {
@@ -54,7 +53,6 @@ export function useProfileContract() {
       if (!payload || !payload.function) {
         throw new Error('Payload is not properly constructed');
       }
-      console.log('Submitting profile payload:', payload);
       const tx = await signAndSubmitTransaction(payload);
       return tx;
     } catch (error) {

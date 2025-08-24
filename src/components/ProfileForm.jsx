@@ -4,7 +4,6 @@ import { useWallet } from '../contexts/WalletContext';
 import '../styles/modal.css';
 
 export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, onTwitterAuth }) {
-  console.log('[ProfileForm] Rendered. twitterProfile prop:', twitterProfile);
   const { createProfile, loading } = useProfileContract();
   const { connected } = useWallet();
   const [formData, setFormData] = useState({
@@ -17,7 +16,6 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
 
   // Update form when Twitter profile changes
   useEffect(() => {
-    console.log('twitterProfile in ProfileForm:', twitterProfile);
     if (twitterProfile) {
       setFormData(prev => ({
         username: twitterProfile.handle || prev.username,
