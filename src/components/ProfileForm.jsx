@@ -4,7 +4,7 @@ import { useWallet } from '../contexts/WalletContext';
 import '../styles/modal.css';
 
 export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, onTwitterAuth }) {
-  // ...existing code...
+  console.log('[ProfileForm] Rendered. twitterProfile prop:', twitterProfile);
   const { createProfile, loading } = useProfileContract();
   const { connected } = useWallet();
   const [formData, setFormData] = useState({
@@ -17,7 +17,7 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
 
   // Update form when Twitter profile changes
   useEffect(() => {
-  // ...existing code...
+    console.log('twitterProfile in ProfileForm:', twitterProfile);
     if (twitterProfile) {
       setFormData(prev => ({
         username: twitterProfile.handle || prev.username,
@@ -53,13 +53,15 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
 
   if (!isOpen) return null;
 
-  // ...existing code...
+  // DEBUG BANNER
+  const debugProfile = twitterProfile ? JSON.stringify(twitterProfile) : 'No profile';
 
   return (
     <div className="modal-overlay" style={{ zIndex: 9999, background: 'rgba(0,0,0,0.7)' }}>
       <div className="modal-content" style={{ zIndex: 10000, background: '#fff', color: '#111', border: '2px solid #ff0' }}>
         <div style={{ background: '#ff0', color: '#111', padding: '8px', marginBottom: '8px', fontWeight: 'bold', textAlign: 'center' }}>
-          {/* ...existing code... */}
+          DEBUG: ProfileForm modal is rendering<br />
+          Profile: {debugProfile}
         </div>
         <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Complete Your Profile</h2>
@@ -94,7 +96,14 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
             />
           </div>
           <div className="form-group">
-            <label>Profile Image URL</label>
+            <label>Profile Image</label>
+            {formData.profile_image && (
+              <img
+                src={formData.profile_image}
+                alt="Profile"
+                style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', marginBottom: '8px' }}
+              />
+            )}
             <input
               type="url"
               name="profile_image"
