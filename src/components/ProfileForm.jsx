@@ -121,24 +121,21 @@ export function ProfileForm({ isOpen, onClose, walletAddress, twitterProfile, on
           </div>
           <div className="form-group">
             <label>Twitter URL</label>
-            {formData.twitter_url ? (
-              <input
-                type="url"
-                name="twitter_url"
-                value={formData.twitter_url}
-                className="form-control"
-                readOnly
-              />
-            ) : (
-              <button
-                type="button"
-                className="login-option"
-                style={{ marginTop: '0.5em' }}
-                onClick={onTwitterAuth}
-              >
-                Connect Twitter
-              </button>
-            )}
+            <input
+              type="url"
+              name="twitter_url"
+              value={formData.twitter_url}
+              className="form-control"
+              readOnly
+            />
+            <button
+              type="button"
+              className="login-option"
+              style={{ marginTop: '0.5em' }}
+              onClick={onTwitterAuth}
+            >
+              Connect Twitter
+            </button>
           </div>
           <button 
             type="submit" 
