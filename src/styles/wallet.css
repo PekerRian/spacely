@@ -1,0 +1,290 @@
+.wallet-container {
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.login-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  background: #3182ce;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.login-button.loading {
+  background: #718096;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.login-button:hover {
+  background: #2c5282;
+}
+
+.login-button.connected {
+  background: #48bb78;
+}
+
+.login-button.connected:hover {
+  background: #38a169;
+}
+
+.login-icon {
+  font-size: 1.2rem;
+}
+
+.wallet-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 400px;
+  z-index: 1000;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.wallet-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  width: 100%;
+}
+
+.wallet-option:hover {
+  background: #f7fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.wallet-option img {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+}
+
+.wallet-option-text {
+  flex: 1;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1a202c;
+}
+
+.address-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  z-index: 100;
+}
+
+.menu-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+  border-radius: 4px;
+}
+
+.menu-item:hover {
+  background: #f7fafc;
+}
+
+.error {
+  color: #e53e3e;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #fed7d7;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #a0aec0;
+}
+
+.close-button:hover {
+  color: #4a5568;
+}
+
+.error-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #e53e3e;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  margin-bottom: 0.5rem;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.wallet-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  margin: 0.5rem 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  width: 100%;
+}
+
+.wallet-option:hover {
+  background: #f7fafc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.wallet-option img {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+}
+
+.wallet-option-text {
+  flex: 1;
+  font-size: 1rem;
+  color: #2d3748;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #1a202c;
+}
+
+.connected-state {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.address {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #4a5568;
+  background: #edf2f7;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.connect-button {
+  background: #3182ce;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.connect-button:hover {
+  background: #2c5282;
+}
+
+.disconnect-button {
+  background: #e53e3e;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s ease;
+}
+
+.disconnect-button:hover {
+  background: #c53030;
+}
+
+.error {
+  color: #e53e3e;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #fed7d7;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #a0aec0;
+}
+
+.close-button:hover {
+  color: #4a5568;
+}

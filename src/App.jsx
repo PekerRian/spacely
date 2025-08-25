@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-do
 import { useState, useEffect } from 'react';
 import { TwitterAuthContext } from './contexts/TwitterAuthContext';
 import './navbar.css';
-import User from './pages/User.jsx';
+import UserPage from './pages/UserPage.jsx';
 import Calendar from './pages/Calendar.jsx';
 import Ecosystem from './pages/Ecosystem.jsx';
 import { WalletProvider } from './contexts/WalletContext';
@@ -114,7 +114,8 @@ function App() {
               </div>
             </nav>
             <Routes>
-              <Route path="/user" element={<User />} />
+              <Route path="/" element={<UserPage />} />
+              <Route path="/user" element={<UserPage />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/ecosystem" element={<Ecosystem />} />
             </Routes>

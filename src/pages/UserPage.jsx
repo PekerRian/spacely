@@ -1,14 +1,57 @@
-import './user.css';
-import { useState, useContext } from 'react';
-import { ProfileForm } from '../components/ProfileForm';
+
+import React, { useState, useEffect } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { TwitterAuthContext } from '../contexts/TwitterAuthContext';
+import useProfileContract from '../hooks/useProfileContract';
+import ProfileForm from '../components/ProfileForm';
 
-export default function User() {
-  const { walletAddress } = useWallet();
-  const { twitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
+export default function UserPage() {
+  // Handler to trigger Twitter OAuth popup
+  const onTwitterAuth = () => {
+    const twitterAuthUrl = '/api/auth/twitter/start';
+    const width = 600;
+    const height = 700;
+    const left = window.screenX + (window.outerWidth - width) / 2;
+    const top = window.screenY + (window.outerHeight - height) / 2;
+    window.open(
+      twitterAuthUrl,
+      'TwitterAuth',
+      `width=${width},height=${height},left=${left},top=${top},resizable,scrollbars=yes,status=1`
+    );
+  };
+  const { account } = useWallet();
+  const walletAddress = account?.address;
+  console.log('UserPage rendered, walletAddress:', walletAddress);
+  const [twitterProfile, setTwitterProfile] = useState(null);
+  const [showProfileForm, setShowProfileForm] = useState(false);
+  const { checkProfile } = useProfileContract();
+
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data.type === 'TWITTER_PROFILE') {
+        setTwitterProfile(event.data.profile);
+        setShowProfileForm(true);
+      } else if (event.data.type === 'TWITTER_ERROR') {
+        console.error('Twitter error:', event.data.error);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  useEffect(() => {
+    const checkAndShowProfileForm = async () => {
+      if (walletAddress) {
+        const hasProfile = await checkProfile(walletAddress);
+        if (!hasProfile) {
+          setShowProfileForm(true);
+        }
+      }
+    };
+    checkAndShowProfileForm();
+  }, [walletAddress, checkProfile]);
+
   const [tab, setTab] = useState('badges');
-
   let content;
   if (tab === 'badges') {
     content = (
@@ -37,7 +80,7 @@ export default function User() {
         <div className="profile-card">
           <img 
             className="profile-avatar" 
-            src={twitterProfile?.profile_image_url || "https://placehold.co/120x120/22ff22/111?text=IMG"} 
+            src={twitterProfile?.profile_image || "https://placehold.co/120x120/22ff22/111?text=IMG"} 
             alt="Profile" 
           />
           <div className="profile-info">
@@ -83,6 +126,7 @@ export default function User() {
         onClose={() => setShowProfileForm(false)}
         walletAddress={walletAddress}
         twitterProfile={twitterProfile}
+        onTwitterAuth={onTwitterAuth}
       />
     </div>
   );

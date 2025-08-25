@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Types, AptosClient } from 'aptos';
 
-export function useProfileContract() {
+export default function useProfileContract() {
   const wallet = useWallet();
   const { account, signAndSubmitTransaction, connected } = wallet;
   const [loading, setLoading] = useState(false);

@@ -1,11 +1,34 @@
-import { AptosWalletAdapterProvider } from '@aptos-labs/wallet-adapter-react';
-import { PetraWallet } from 'petra-plugin-wallet-adapter';
 
-const wallets = [new PetraWallet()];
+
+
+import { AptosWalletAdapterProvider } from '@aptos-labs/wallet-adapter-react';
+import { Network } from '@aptos-labs/ts-sdk';
 
 export function WalletProvider({ children }) {
   return (
-    <AptosWalletAdapterProvider plugins={wallets} autoConnect={true}>
+    <AptosWalletAdapterProvider
+      autoConnect={true}
+      dappConfig={{
+        network: Network.MAINNET
+      }}
+      onError={(error) => {
+        console.error('Wallet error:', error?.name, error?.message);
+      }}
+    >
+      {children}
+    </AptosWalletAdapterProvider>
+  );
+
+  return (
+    <AptosWalletAdapterProvider
+      autoConnect={true}
+      dappConfig={{
+        network: Network.MAINNET
+      }}
+      onError={(error) => {
+        console.error('Wallet error:', error?.name, error?.message);
+      }}
+    >
       {children}
     </AptosWalletAdapterProvider>
   );

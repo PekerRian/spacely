@@ -1,0 +1,132 @@
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { useState, useRef, useEffect } from 'react';
+import '../styles/wallet.css';
+
+export function WalletConnect() {
+  const { connect, disconnect, account, connected } = useWallet();
+  const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [showAddressMenu, setShowAddressMenu] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setShowAddressMenu(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleConnect = async (walletName) => {
+    try {
+      setError(null);
+      if (walletName === 'petra') {
+        await connect('Petra');
+      } else if (walletName === 'google' || walletName === 'apple') {
+        alert(`${walletName.charAt(0).toUpperCase() + walletName.slice(1)} login coming soon!`);
+        return;
+      }
+      setShowModal(false);
+    } catch (err) {
+      setError(err.message || 'Failed to connect wallet');
+      console.error(err);
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      await disconnect();
+      setError(null);
+      setShowAddressMenu(false);
+    } catch (err) {
+      setError(err.message || 'Failed to disconnect wallet');
+      console.error(err);
+    }
+  };
+
+  const formatAddress = (address) => {
+    if (!address) return '';
+    const addr = address.toString();
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  return (
+    <div className="wallet-container" ref={containerRef}>
+      {error && <div className="error">{error}</div>}
+      
+      <button 
+        className={`login-button ${connected ? 'connected' : ''}`}
+        onClick={() => !connected ? setShowModal(true) : setShowAddressMenu(!showAddressMenu)}
+      >
+        <span className="login-icon">
+          {connected ? '👤' : '👥'}
+        </span>
+        {connected ? formatAddress(account?.address) : 'Connect Wallet'}
+      </button>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="wallet-modal" onClick={e => e.stopPropagation()}>
+            <button className="close-button" onClick={() => setShowModal(false)}>×</button>
+            <h2 className="modal-title">Connect Wallet</h2>
+            
+            <button 
+              className="wallet-option"
+              onClick={() => handleConnect('petra')}
+            >
+              <img src="https://petra.app/favicon.ico" alt="Petra Wallet" />
+              <span className="wallet-option-text">Petra Wallet</span>
+            </button>
+
+            <button 
+              className="wallet-option"
+              onClick={() => handleConnect('google')}
+            >
+              <img src="https://www.google.com/favicon.ico" alt="Google" />
+              <span className="wallet-option-text">Continue with Google</span>
+            </button>
+
+            <button 
+              className="wallet-option"
+              onClick={() => handleConnect('apple')}
+            >
+              <img src="https://www.apple.com/favicon.ico" alt="Apple" />
+              <span className="wallet-option-text">Continue with Apple</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showAddressMenu && connected && !error && (
+        <div 
+          className="address-menu"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div 
+            className="menu-item"
+            onClick={() => {
+              navigator.clipboard.writeText(account?.address);
+              setShowAddressMenu(false);
+            }}
+          >
+            Copy Address
+          </div>
+          <div 
+            className="menu-item"
+            onClick={() => {
+              handleDisconnect();
+              setShowAddressMenu(false);
+            }}
+          >
+            Disconnect
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

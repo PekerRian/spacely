@@ -1,245 +1,157 @@
+
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { useState, useEffect, useContext, useRef } from 'react';
-import { TwitterAuthContext } from '../contexts/TwitterAuthContext';
-import { ProfileForm } from './ProfileForm';
-import { useProfileContract } from '../hooks/useProfileContract';
-import '../styles/modal.css';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect, useMemo } from 'react';
+import '../styles/wallet.css';
 
 export function WalletConnect() {
-  const { twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm } = useContext(TwitterAuthContext);
-  // On mount, check for Twitter profile or error in sessionStorage (main window callback flow)
-  useEffect(() => {
-    const storedProfile = sessionStorage.getItem('twitter_profile');
-    if (storedProfile) {
-      try {
-        const profile = JSON.parse(storedProfile);
-        setTwitterProfile({
-          ...profile,
-          url: `https://twitter.com/${profile.username || profile.handle || ''}`
-        });
-        setShowProfileForm(true);
-      } catch (e) {
-        console.error('Failed to parse twitter_profile:', e);
-      }
-      sessionStorage.removeItem('twitter_profile');
-    }
-    const twitterError = sessionStorage.getItem('twitter_error');
-    if (twitterError) {
-      alert('Twitter authentication failed: ' + twitterError);
-      sessionStorage.removeItem('twitter_error');
-    }
-  }, [setTwitterProfile, setShowProfileForm]);
-  const navigate = useNavigate();
-  const { connect, disconnect, account, wallets, connected } = useWallet();
-  const [showAddressMenu, setShowAddressMenu] = useState(false);
+  const { 
+    connect,
+    disconnect,
+    account,
+    connected,
+    wallet: activeWallet,
+    wallets,
+    isLoading
+  } = useWallet();
+  
   const [error, setError] = useState(null);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const { checkProfile, createProfile } = useProfileContract();
+  const [showModal, setShowModal] = useState(false);
+  const [showAddressMenu, setShowAddressMenu] = useState(false);
+  const menuRef = useRef(null);
+  const buttonRef = useRef(null);
 
-  // Handles wallet connect/disconnect button
-  const handleConnectWallet = async () => {
-    setError(null);
-    if (connected) {
-      await disconnect();
-      setShowProfileForm(false);
-      return;
-    }
-    setShowLoginModal(true);
-  };
 
-  // Check for profile existence when wallet connects
-  // Only open modal on wallet connect if Twitter profile is NOT present
+
   useEffect(() => {
-    const check = async () => {
-      if (connected && account?.address && !twitterProfile) {
-        try {
-          const exists = await checkProfile(account.address);
-          setShowProfileForm(!exists);
-        } catch (err) {
-          setError('Error checking profile: ' + (err?.message || err));
-        }
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target) &&
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
+        setShowAddressMenu(false);
       }
-    };
-    check();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connected, account?.address, twitterProfile]);
-
-  // PKCE Twitter OAuth2 flow using serverless function
-  const handleTwitterAuth = async () => {
-    // 1. Save current route
-    sessionStorage.setItem('twitter_prev_route', window.location.pathname + window.location.search);
-    // 2. Generate code_verifier and code_challenge
-    const codeVerifier = generateRandomString(64);
-    const codeChallenge = await pkceChallengeFromVerifier(codeVerifier);
-    const state = generateRandomString(16);
-    sessionStorage.setItem('twitter_verifier', codeVerifier);
-    sessionStorage.setItem('twitter_state', state);
-    // 3. Build Twitter authorize URL
-    const params = new URLSearchParams({
-      response_type: 'code',
-      client_id: import.meta.env.VITE_TWITTER_CLIENT_ID,
-      redirect_uri: window.location.origin + '/',
-      scope: 'tweet.read users.read offline.access',
-      state,
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
-    });
-    const authUrl = `https://twitter.com/i/oauth2/authorize?${params.toString()}`;
-  // 4. Redirect in same tab (never use window.open)
-  window.location.href = authUrl;
-  };
-
-  // Handle Twitter OAuth2 callback (call serverless function)
-  // Remove sessionStorage dependency: always handle code/state in URL
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const code = url.searchParams.get('code');
-    const state = url.searchParams.get('state');
-    // Only fetch if twitterProfile is not already set
-    if (code && state && !twitterProfile) {
-      const codeVerifier = sessionStorage.getItem('twitter_verifier');
-      const redirect_uri = window.location.origin + '/';
-      const payload = codeVerifier
-        ? { code, code_verifier: codeVerifier, redirect_uri }
-        : null;
-      const fetchProfile = payload
-        ? fetch('/api/twitter-callback', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-          })
-        : fetch(`/api/twitter-callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`);
-      fetchProfile
-        .then(res => res.json().then(data => ({ status: res.status, ...data })))
-        .then(data => {
-          if (data.profile) {
-            setTwitterProfile({
-              ...data.profile,
-              url: `https://twitter.com/${data.profile.username || data.profile.handle || ''}`
-            });
-            const prevRoute = sessionStorage.getItem('twitter_prev_route');
-            if (prevRoute && window.location.pathname + window.location.search !== prevRoute) {
-              navigate(prevRoute, { replace: true });
-            }
-            setShowProfileForm(true);
-            setTimeout(() => {
-              const modal = document.querySelector('.modal-overlay');
-              if (modal) modal.focus();
-            }, 100);
-          } else if (data.status === 429) {
-            setError('Twitter rate limit exceeded. Please wait a few minutes before trying again.');
-            setShowProfileForm(true);
-          } else {
-            setError('Twitter authentication failed: ' + (data.error || 'Unknown error'));
-            setShowProfileForm(true);
-          }
-        })
-        .catch(e => {
-          setError('Twitter authentication failed: ' + e.message);
-          setShowProfileForm(true);
-        });
     }
-  }, [setTwitterProfile, setShowProfileForm, twitterProfile, navigate]);
 
-  // Helper: PKCE
-  function generateRandomString(length) {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-    let result = '';
-    const array = new Uint8Array(length);
-    window.crypto.getRandomValues(array);
-    for (let i = 0; i < array.length; i++) {
-      result += charset[array[i] % charset.length];
-    }
-    return result;
-  }
-  async function pkceChallengeFromVerifier(v) {
-    const data = new TextEncoder().encode(v);
-    const digest = await window.crypto.subtle.digest('SHA-256', data);
-    return btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  }
-  const handlePetraConnect = async () => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleConnect = async (wallet) => {
     try {
-      if (!wallets || wallets.length === 0) {
-        throw new Error('No wallets available');
+      setError(null);
+      
+      // If wallet has a deeplinkProvider (for mobile), use it
+      if ("deeplinkProvider" in wallet && wallet.deeplinkProvider) {
+        window.location.href = `${wallet.deeplinkProvider}?link=${window.location.href}`;
+        return;
       }
-      await connect(wallets[0].name);
-      setShowLoginModal(false);
+      
+      // Otherwise connect normally
+      await connect(wallet.name);
+      setShowModal(false);
     } catch (err) {
-      setError(err.message);
+      const message = err.message || 'Failed to connect wallet';
+      setError(message);
+      console.error('Wallet connection error:', { name: err.name, message });
     }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google OAuth
-    alert('Google login not implemented yet.');
-    setShowLoginModal(false);
+  const handleDisconnect = async () => {
+    try {
+      await disconnect();
+      setError(null);
+      setShowAddressMenu(false);
+    } catch (err) {
+      setError(err.message || 'Failed to disconnect wallet');
+      console.error(err);
+    }
   };
 
-  const handleAppleLogin = () => {
-    // TODO: Implement Apple OAuth
-    alert('Apple login not implemented yet.');
-    setShowLoginModal(false);
-  };
-
-  // Format address for display (first 6 and last 4 characters)
   const formatAddress = (address) => {
-    if (!address || typeof address !== 'string') return '';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+    if (!address) return '';
+    const addr = address.toString();
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   };
-
-
 
   return (
-    <>
+    <div className="wallet-container">
+      {error && <div className="error">{error}</div>}
+      
       <button 
-        className={`login-button ${connected ? 'connected' : ''}`} 
-        onClick={handleConnectWallet}
-        onMouseEnter={() => connected && setShowAddressMenu(true)}
-        onMouseLeave={() => setShowAddressMenu(false)}
+        ref={buttonRef}
+        className={`login-button ${connected ? 'connected' : ''} ${isLoading ? 'loading' : ''}`}
+        onClick={() => !connected ? setShowModal(true) : setShowAddressMenu(!showAddressMenu)}
+        disabled={isLoading}
       >
         <span className="login-icon">
-          {connected ? '👤' : '👥'}
+          {isLoading ? '⌛' : connected ? '👤' : '👥'}
         </span>
-        {error && (
-          <div className="error-tooltip">{error}</div>
-        )}
-        {showAddressMenu && connected && !error && (
-          <div className="address-menu">
-            <div className="menu-item" onClick={(e) => {
-              e.stopPropagation();
-              navigator.clipboard.writeText(account?.address);
-            }}>
-              Copy Address
-            </div>
-            <div className="menu-item" onClick={(e) => {
-              e.stopPropagation();
-              disconnect();
-            }}>
-              Disconnect
-            </div>
-          </div>
-        )}
+        {isLoading 
+          ? 'Connecting...'
+          : connected 
+            ? formatAddress(account?.address)
+            : 'Connect Wallet'
+        }
       </button>
-      {showLoginModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>Choose Login Method</h2>
-            <button className="login-option" onClick={handleGoogleLogin}>Login with Google</button>
-            <button className="login-option" onClick={handleAppleLogin}>Login with Apple</button>
-            <button className="login-option" onClick={handlePetraConnect}>Login with Petra Wallet</button>
-            <button className="close-modal" onClick={() => setShowLoginModal(false)}>Cancel</button>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="wallet-modal" onClick={e => e.stopPropagation()}>
+            <button className="close-button" onClick={() => setShowModal(false)}>×</button>
+            <h2 className="modal-title">Connect Wallet</h2>
+            
+            {error && (
+              <div className="error">
+                {error}
+              </div>
+            )}
+
+            <div className="wallet-section">
+              <h3 className="wallet-section-title">Available Wallets</h3>
+              {wallets && wallets.length > 0 ? (
+                wallets.map((wallet) => (
+                  <button
+                    key={wallet.name}
+                    className={`wallet-option ${activeWallet?.name === wallet.name ? 'active' : ''}`}
+                    onClick={() => handleConnect(wallet)}
+                  >
+                    {wallet.icon && <img src={wallet.icon} alt={wallet.name} className="social-icon" />}
+                    <span className="wallet-option-text">{wallet.name}</span>
+                  </button>
+                ))
+              ) : (
+                <div className="no-wallets-message">
+                  No wallets detected. Please install a supported wallet.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
-      <ProfileForm
-        isOpen={showProfileForm}
-        onClose={() => setShowProfileForm(false)}
-        walletAddress={account?.address?.toString()}
-        twitterProfile={twitterProfile}
-        onTwitterAuth={handleTwitterAuth}
-      />
-    </>
+
+      {showAddressMenu && connected && !error && (
+        <div 
+          ref={menuRef}
+          className="address-menu"
+        >
+          <div 
+            className="menu-item"
+            onClick={() => {
+              navigator.clipboard.writeText(account?.address);
+              setShowAddressMenu(false);
+            }}
+          >
+            Copy Address
+          </div>
+          <div 
+            className="menu-item"
+            onClick={() => {
+              handleDisconnect();
+              setShowAddressMenu(false);
+            }}
+          >
+            Disconnect
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
