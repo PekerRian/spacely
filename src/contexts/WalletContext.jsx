@@ -9,7 +9,7 @@ export function WalletProvider({ children }) {
     <AptosWalletAdapterProvider
       autoConnect={true}
       dappConfig={{
-        network: Network.MAINNET
+        network: Network.TESTNET
       }}
       onError={(error) => {
         console.error('Wallet error:', error?.name, error?.message);
