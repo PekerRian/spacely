@@ -1,4 +1,6 @@
 
+
+const crypto = require('crypto');
 // Helper to base64url encode a buffer
 function base64url(buffer) {
   return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -6,12 +8,11 @@ function base64url(buffer) {
 
 // Helper to generate a random string
 function randomString(length = 64) {
-  return base64url(require('crypto').randomBytes(length)).substring(0, length);
+  return base64url(crypto.randomBytes(length)).substring(0, length);
 }
 
 // Helper to generate S256 code challenge
 async function pkceChallengeFromVerifier(verifier) {
-  const crypto = require('crypto');
   const hash = crypto.createHash('sha256').update(verifier).digest();
   return base64url(hash);
 }
