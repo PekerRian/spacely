@@ -35,7 +35,7 @@ export default function useProfileContract() {
   const createProfile = async (profileData) => {
     try {
       setLoading(true);
-      if (!account) {
+      if (!connected || !account) {
         throw new Error('Wallet not connected');
       }
       if (!profileData?.username || !profileData?.twitter_url) {
