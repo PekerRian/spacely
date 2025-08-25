@@ -38,18 +38,27 @@ export default function useProfileContract() {
       if (!account) {
         throw new Error('Wallet not connected');
       }
-      
       if (!profileData?.username || !profileData?.twitter_url) {
         throw new Error('Username and Twitter URL are required');
       }
-
       if (!account.address) {
         throw new Error('Wallet address not available');
       }
-
+      let address = account.address;
+      // If address is Uint8Array or object, convert to hex string
+      if (typeof address !== 'string') {
+        if (address instanceof Uint8Array) {
+          address = '0x' + Array.from(address).map(x => x.toString(16).padStart(2, '0')).join('');
+        } else if (address.toString) {
+          address = address.toString();
+        } else {
+          throw new Error('Wallet address is not a string or Uint8Array');
+        }
+      }
       // Ensure the address has the 0x prefix
-      const address = account.address.startsWith('0x') ? account.address : `0x${account.address}`;
-      
+      if (!address.startsWith('0x')) {
+        address = `0x${address}`;
+      }
       const transaction = {
         type: "entry_function_payload",
         function: `${address}::profiles::create_profile`,
