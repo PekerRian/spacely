@@ -1,7 +1,7 @@
 import './user.css';
 import { useState, useContext } from 'react';
 import { ProfileForm } from '../components/ProfileForm';
-import { useWallet } from '../contexts/WalletContext';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { TwitterAuthContext } from '../contexts/TwitterAuthContext';
 
 export default function User() {
