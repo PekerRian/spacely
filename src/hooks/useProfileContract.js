@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { AptosClient, Network } from '@aptos-labs/ts-sdk';
+import { Aptos, Network } from '@aptos-labs/ts-sdk';
 
 export default function useProfileContract() {
   const wallet = useWallet();
   const { account, signAndSubmitTransaction, connected } = wallet;
   const [loading, setLoading] = useState(false);
   
-  const client = new AptosClient({ network: Network.TESTNET });
+  const client = new Aptos({ network: Network.TESTNET });
 
   const checkProfile = async (address) => {
     try {
