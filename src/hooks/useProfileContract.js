@@ -47,7 +47,7 @@ export default function useProfileContract() {
         throw new Error('Wallet address not available');
       }
       // Use the published module address from Move.toml
-      const MODULE_ADDRESS = "0x030a49e550317d928495602ea9146550f90ec9808666fa5bd949e8ef9db5ff31";
+      const MODULE_ADDRESS = "0x720757d34c77743730715fcf091f456e6840e32a077014d6883983ff7323c3ea";
       const transaction = {
         sender: account.address,
         data: {
