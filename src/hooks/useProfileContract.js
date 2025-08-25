@@ -44,24 +44,11 @@ export default function useProfileContract() {
       if (!account.address) {
         throw new Error('Wallet address not available');
       }
-      let address = account.address;
-      // If address is Uint8Array or object, convert to hex string
-      if (typeof address !== 'string') {
-        if (address instanceof Uint8Array) {
-          address = '0x' + Array.from(address).map(x => x.toString(16).padStart(2, '0')).join('');
-        } else if (address.toString) {
-          address = address.toString();
-        } else {
-          throw new Error('Wallet address is not a string or Uint8Array');
-        }
-      }
-      // Ensure the address has the 0x prefix
-      if (!address.startsWith('0x')) {
-        address = `0x${address}`;
-      }
+      // Use the published module address from Move.toml
+      const MODULE_ADDRESS = "0x030a49e550317d928495602ea9146550f90ec9808666fa5bd949e8ef9db5ff31";
       const transaction = {
         type: "entry_function_payload",
-        function: `${address}::profiles::create_profile`,
+        function: `${MODULE_ADDRESS}::profiles::create_profile`,
         type_arguments: [],
         arguments: [
           profileData.username || '',
