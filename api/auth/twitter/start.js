@@ -1,6 +1,6 @@
 
 
-const crypto = require('crypto');
+import crypto from 'crypto';
 // Helper to base64url encode a buffer
 function base64url(buffer) {
   return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
