@@ -70,8 +70,13 @@ export default async function handler(req, res) {
       return res.status(400).send('Profile fetch failed: ' + (profileData.error || profileData.title || 'Unknown error'));
     }
 
-    // Send profile data to opener window and close popup
-    const html = `<!DOCTYPE html><html><body><script>window.opener && window.opener.postMessage({type:'TWITTER_PROFILE',profile:${JSON.stringify(profileData.data)}}, window.origin);window.close();</script></body></html>`;
+    // Normalize profile: always include handle and twitter_url
+    const normalized = {
+      ...profileData.data,
+      handle: profileData.data.username || profileData.data.handle || '',
+      twitter_url: profileData.data.username ? `https://twitter.com/${profileData.data.username}` : '',
+    };
+    const html = `<!DOCTYPE html><html><body><script>window.opener && window.opener.postMessage({type:'TWITTER_PROFILE',profile:${JSON.stringify(normalized)}}, window.origin);window.close();</script></body></html>`;
     res.setHeader('Content-Type', 'text/html');
     res.status(200).send(html);
   } catch (error) {
