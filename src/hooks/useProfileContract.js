@@ -24,7 +24,7 @@ export default function useProfileContract() {
       
       // Look for the UserProfile resource in the account's resources
       const profileResource = resources.find(
-        (r) => r.type === 'spacely::profiles::UserProfile'
+        (r) => r.type === 'spacely2::profiles2::UserProfile'
       );
 
       return !!profileResource;
@@ -51,7 +51,7 @@ export default function useProfileContract() {
       const transaction = {
         sender: account.address,
         data: {
-          function: `${MODULE_ADDRESS}::profiles::create_profile`,
+          function: `${MODULE_ADDRESS}::profiles2::create_profile`,
           typeArguments: [],
           functionArguments: [
             profileData.username || '',

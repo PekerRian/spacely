@@ -1,4 +1,4 @@
-module spacely::profiles {
+module spacely2::profiles2 {
     use std::string::String;
     use std::vector;
     use std::error;
@@ -25,7 +25,6 @@ module spacely::profiles {
         bio: String,
         profile_image: String,
         affiliation: String,
-        twitter_url: String,
         friend_count: u64,
     // created_at: u64,
     // updated_at: u64,
@@ -160,8 +159,7 @@ module spacely::profiles {
         username: String,
         bio: String,
         profile_image: String,
-        affiliation: String,
-        twitter_url: String
+        affiliation: String
     ): Object<UserProfile> acquires ProfileCollection {
         let admin_addr = signer::address_of(creator); // always use admin for tests
     // Enforce unique username
@@ -179,7 +177,6 @@ module spacely::profiles {
             bio,
             profile_image,
             affiliation,
-            twitter_url,
             friend_count: 0,
         };
         vector::push_back(&mut collection.usernames, username);
@@ -228,7 +225,7 @@ module spacely::profiles {
     }
 
     // Update profile functions
-    public fun update_username(
+    public entry fun update_username(
         account: &signer,
         profile: Object<UserProfile>,
         new_username: String,
@@ -253,7 +250,7 @@ module spacely::profiles {
         );
     }
 
-    public fun update_bio(
+    public entry fun update_bio(
         account: &signer,
         profile: Object<UserProfile>,
         new_bio: String,
@@ -265,7 +262,7 @@ module spacely::profiles {
     // profile_data.updated_at = 0;
     }
 
-    public fun update_profile_image(
+    public entry fun update_profile_image(
         account: &signer,
         profile: Object<UserProfile>,
         new_image: String,
@@ -277,7 +274,7 @@ module spacely::profiles {
     // profile_data.updated_at = 0;
     }
 
-    public fun update_affiliation(
+    public entry fun update_affiliation(
         account: &signer,
         profile: Object<UserProfile>,
         new_affiliation: String,
@@ -290,7 +287,7 @@ module spacely::profiles {
     }
 
     // Friend management functions
-    public fun add_friend(
+    public entry fun add_friend(
         account: &signer,
         from_profile: Object<UserProfile>,
         to_profile: Object<UserProfile>,
@@ -306,7 +303,7 @@ module spacely::profiles {
         borrow_global_mut<UserProfile>(from_addr).friend_count = borrow_global_mut<UserProfile>(from_addr).friend_count + 1;
     }
 
-    public fun remove_friend(
+    public entry fun remove_friend(
         account: &signer,
         from_profile: Object<UserProfile>,
         to_profile: Object<UserProfile>,
@@ -329,7 +326,7 @@ module spacely::profiles {
     }
 
     // Badge management functions
-    public fun add_badge(account: &signer, profile: Object<UserProfile>, badge_hash: String) acquires UserProfile, Badges {
+    public entry fun add_badge(account: &signer, profile: Object<UserProfile>, badge_hash: String) acquires UserProfile, Badges {
         let profile_addr = object::object_address(&profile);
         let profile_data = borrow_global<UserProfile>(profile_addr);
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
@@ -346,7 +343,7 @@ module spacely::profiles {
     }
 
     // Profile transfer and mutability
-    public fun transfer_profile(
+    public entry fun transfer_profile(
         account: &signer,
         profile: Object<UserProfile>,
         to: address,
@@ -362,7 +359,7 @@ module spacely::profiles {
         borrow_global_mut<UserProfile>(profile_addr).creator = to;
     }
 
-    public fun disable_transfer(account: &signer, profile: Object<UserProfile>) acquires UserProfile, ProfileMutability {
+    public entry fun disable_transfer(account: &signer, profile: Object<UserProfile>) acquires UserProfile, ProfileMutability {
         let profile_addr = object::object_address(&profile);
         let profile_data = borrow_global<UserProfile>(profile_addr);
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
@@ -375,7 +372,7 @@ module spacely::profiles {
     }
 
     // Profile deletion
-    public fun delete_profile(account: &signer, profile: Object<UserProfile>) acquires UserProfile, FriendList, Badges, ProfileMutability, ProfileCollection {
+    public entry fun delete_profile(account: &signer, profile: Object<UserProfile>) acquires UserProfile, FriendList, Badges, ProfileMutability, ProfileCollection {
         let profile_addr = object::object_address(&profile);
         let profile_data = borrow_global<UserProfile>(profile_addr);
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
@@ -395,13 +392,13 @@ module spacely::profiles {
         );
     }
 
-    public fun send_message(
-        from_profile: &Object<UserProfile>,
-        to_profile: &Object<UserProfile>,
+    public entry fun send_message(
+        from_profile: Object<UserProfile>,
+        to_profile: Object<UserProfile>,
         content: String
     ) acquires MessageBox, ProfileCollection {
-        let from_addr = object::object_address(from_profile);
-        let to_addr = object::object_address(to_profile);
+        let from_addr = object::object_address(&from_profile);
+        let to_addr = object::object_address(&to_profile);
         
         let message_box = borrow_global_mut<MessageBox>(from_addr);
         let message_id = message_box.next_message_id;
@@ -422,7 +419,7 @@ module spacely::profiles {
         vector::push_back(&mut to_message_box.received_messages, message);
         
         event::emit_event(
-            &mut borrow_global_mut<ProfileCollection>(@spacely).message_sent_events,
+            &mut borrow_global_mut<ProfileCollection>(@spacely2).message_sent_events,
             MessageSentEvent {
                 message_id,
                 from: from_addr,
@@ -432,11 +429,11 @@ module spacely::profiles {
         );
     }
 
-    public fun delete_message(
-        profile: &Object<UserProfile>,
+    public entry fun delete_message(
+        profile: Object<UserProfile>,
         message_id: u64
     ) acquires MessageBox, ProfileCollection {
-        let profile_addr = object::object_address(profile);
+        let profile_addr = object::object_address(&profile);
         let message_box = borrow_global_mut<MessageBox>(profile_addr);
         
         // Try to find and delete in sent messages
@@ -446,7 +443,7 @@ module spacely::profiles {
             if (message.id == message_id && !message.is_deleted) {
                 message.is_deleted = true;
                 event::emit_event(
-                    &mut borrow_global_mut<ProfileCollection>(@spacely).message_deleted_events,
+                    &mut borrow_global_mut<ProfileCollection>(@spacely2).message_deleted_events,
                     MessageDeletedEvent {
                         message_id,
                         deleted_by: profile_addr,
@@ -465,7 +462,7 @@ module spacely::profiles {
             if (message.id == message_id && !message.is_deleted) {
                 message.is_deleted = true;
                 event::emit_event(
-                    &mut borrow_global_mut<ProfileCollection>(@spacely).message_deleted_events,
+                    &mut borrow_global_mut<ProfileCollection>(@spacely2).message_deleted_events,
                     MessageDeletedEvent {
                         message_id,
                         deleted_by: profile_addr,
@@ -479,11 +476,11 @@ module spacely::profiles {
     }
 
     // Space management functions
-    public fun get_space_name(space: &Space): String {
+    public fun get_space_name(space: Space): String {
         space.name
     }
 
-    public fun create_space(
+    public entry fun create_space(
         account: &signer,
         profile: Object<UserProfile>,
         name: String,
@@ -507,7 +504,7 @@ module spacely::profiles {
         vector::push_back(&mut space_list.spaces, space);
 
         event::emit_event(
-            &mut borrow_global_mut<ProfileCollection>(@spacely).space_created_events,
+            &mut borrow_global_mut<ProfileCollection>(@spacely2).space_created_events,
             SpaceCreatedEvent {
                 name,
                 host: profile_data.username,
@@ -517,7 +514,7 @@ module spacely::profiles {
         );
     }
 
-    public fun update_space(
+    public entry fun update_space(
         account: &signer,
         profile: Object<UserProfile>,
         index: u64,
@@ -538,7 +535,7 @@ module spacely::profiles {
         space.topics = new_topics;
 
         event::emit_event(
-            &mut borrow_global_mut<ProfileCollection>(@spacely).space_updated_events,
+            &mut borrow_global_mut<ProfileCollection>(@spacely2).space_updated_events,
             SpaceUpdatedEvent {
                 name: new_name,
                 start_time: new_start_time,
@@ -559,7 +556,7 @@ module spacely::profiles {
     }
 
     #[test_only]
-    public fun init_module_for_test(creator: &signer) {
+    public entry fun init_module_for_test(creator: &signer) {
         let addr = signer::address_of(creator);
         if (!exists<ProfileCollection>(addr)) {
             init_module(creator);

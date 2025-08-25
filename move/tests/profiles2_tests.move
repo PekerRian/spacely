@@ -5,7 +5,7 @@ module spacely2::profiles_tests {
     use std::signer;
     use std::vector;
     use aptos_framework::timestamp;
-    use spacely2::profiles2;
+    use spacely2::profiles2 as profiles;
 
 
     // Test constants
