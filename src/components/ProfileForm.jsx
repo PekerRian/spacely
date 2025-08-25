@@ -22,7 +22,7 @@ export default function ProfileForm({ isOpen, onClose, walletAddress, twitterPro
         bio: twitterProfile.bio || prev.bio,
         profile_image: twitterProfile.profile_image_url || prev.profile_image,
         affiliation: prev.affiliation,
-        twitter_url: twitterProfile.url || ''
+        twitter_url: twitterProfile.twitter_url || twitterProfile.url || ''
       }));
     }
   }, [twitterProfile]);
