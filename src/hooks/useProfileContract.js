@@ -24,7 +24,7 @@ export default function useProfileContract() {
       
       // Look for the UserProfile resource in the account's resources
       const profileResource = resources.find(
-        (r) => r.type === 'spacely2::profiles2::UserProfile'
+        (r) => r.type === '0x7a0bc01a9e12a99db2350fe7b96595cf1577adb3e05a5afcf4d3d5faacb7f228::profiles3::UserProfile'
       );
 
       return !!profileResource;
@@ -47,11 +47,11 @@ export default function useProfileContract() {
         throw new Error('Wallet address not available');
       }
       // Use the published module address from Move.toml
-      const MODULE_ADDRESS = "0x720757d34c77743730715fcf091f456e6840e32a077014d6883983ff7323c3ea";
+      const MODULE_ADDRESS = "0x7a0bc01a9e12a99db2350fe7b96595cf1577adb3e05a5afcf4d3d5faacb7f228";
       const transaction = {
         sender: account.address,
         data: {
-          function: `${MODULE_ADDRESS}::profiles2::create_profile`,
+          function: `${MODULE_ADDRESS}::profiles3::create_profile_entry`,
           typeArguments: [],
           functionArguments: [
             profileData.username || '',
