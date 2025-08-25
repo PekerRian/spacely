@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Types, AptosClient } from 'aptos';
+import { AptosClient, Network } from '@aptos-labs/ts-sdk';
 
 export default function useProfileContract() {
   const wallet = useWallet();
   const { account, signAndSubmitTransaction, connected } = wallet;
   const [loading, setLoading] = useState(false);
+  
+  const client = new AptosClient({ network: Network.TESTNET });
 
   const checkProfile = async (address) => {
     try {
@@ -47,16 +49,18 @@ export default function useProfileContract() {
       // Use the published module address from Move.toml
       const MODULE_ADDRESS = "0x030a49e550317d928495602ea9146550f90ec9808666fa5bd949e8ef9db5ff31";
       const transaction = {
-        type: "entry_function_payload",
-        function: `${MODULE_ADDRESS}::profiles::create_profile`,
-        type_arguments: [],
-        arguments: [
-          profileData.username || '',
-          profileData.bio || '',
-          profileData.profile_image || '',
-          profileData.affiliation || '',
-          profileData.twitter_url || ''
-        ]
+        sender: account.address,
+        data: {
+          function: `${MODULE_ADDRESS}::profiles::create_profile`,
+          typeArguments: [],
+          functionArguments: [
+            profileData.username || '',
+            profileData.bio || '',
+            profileData.profile_image || '',
+            profileData.affiliation || '',
+            profileData.twitter_url || ''
+          ]
+        }
       };
 
       if (!signAndSubmitTransaction) {
@@ -66,7 +70,17 @@ export default function useProfileContract() {
       console.log('Submitting transaction:', transaction);
       const pendingTransaction = await signAndSubmitTransaction(transaction);
       console.log('Transaction submitted:', pendingTransaction);
-      return pendingTransaction.hash;
+
+      // Wait for transaction
+      try {
+        const txnHash = pendingTransaction.hash;
+        await client.waitForTransaction({ transactionHash: txnHash });
+        console.log('Transaction confirmed');
+        return txnHash;
+      } catch (error) {
+        console.error('Error waiting for transaction:', error);
+        throw new Error('Transaction failed: ' + error.message);
+      }
 
     } catch (error) {
       console.error('Error creating profile:', error);

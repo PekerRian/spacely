@@ -35,10 +35,14 @@ export default function ProfileForm({ isOpen, onClose, walletAddress, twitterPro
     }));
   };
 
+  const [error, setError] = useState(null);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    
     if (!connected) {
-      alert('Please connect your wallet to create a profile.');
+      setError('Please connect your wallet to create a profile.');
       return;
     }
     try {
@@ -46,6 +50,7 @@ export default function ProfileForm({ isOpen, onClose, walletAddress, twitterPro
       onClose();
     } catch (error) {
       console.error('Error creating profile:', error);
+      setError(error.message || 'Failed to create profile. Please try again.');
     }
   };
 
@@ -55,9 +60,9 @@ export default function ProfileForm({ isOpen, onClose, walletAddress, twitterPro
           <div className="modal-content" style={{ zIndex: 10000, background: 'linear-gradient(135deg, #1a2236 60%, #232946 100%)', color: '#e0e6f6', borderRadius: '18px', boxShadow: '0 4px 32px 0 #23294688', padding: '32px 24px', maxWidth: '400px', margin: '40px auto', position: 'relative' }}>
         <button className="modal-close" onClick={onClose}>&times;</button>
         <h2>Complete Your Profile</h2>
-        {!connected && (
+        {(error || !connected) && (
           <div className="wallet-warning" style={{ color: 'red', marginBottom: '1em' }}>
-            Please connect your wallet to create a profile.
+            {error || 'Please connect your wallet to create a profile.'}
           </div>
         )}
         <form onSubmit={handleSubmit} className="profile-form">
