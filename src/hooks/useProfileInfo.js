@@ -20,9 +20,11 @@ export default function useProfileInfo() {
         );
         if (!res.ok) throw new Error('Failed to fetch resources');
         const resources = await res.json();
+        console.log('Fetched resources for', account.address, resources);
         const profileResource = resources.find(
           (r) => r.type === '0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51::spacelyapp::UserProfile'
         );
+        console.log('UserProfile resource:', profileResource);
         if (profileResource && profileResource.data) {
           setProfile(profileResource.data);
         } else {
