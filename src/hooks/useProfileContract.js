@@ -38,16 +38,18 @@ export default function useProfileContract() {
 			}
 			
 			const transaction = {
-				type: "entry_function_payload",
-				function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-				type_arguments: [],
-				arguments: [
-					profileData.username || '',
-					profileData.bio || '',
-					profileData.profile_image || '',
-					profileData.affiliation || '',
-					profileData.twitter_url || ''
-				]
+				payload: {
+					type: "entry_function_payload",
+					function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+					type_arguments: [],
+					arguments: [
+						profileData.username || '',
+						profileData.bio || '',
+						profileData.profile_image || '',
+						profileData.affiliation || '',
+						profileData.twitter_url || ''
+					]
+				}
 			};
 
 			console.log('Submitting transaction:', transaction);
