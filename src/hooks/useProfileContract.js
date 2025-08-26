@@ -1,18 +1,6 @@
 
 import { useState } from 'react';
-i      const transaction = {
-        data: {
-          function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-          functionArguments: [
-            profileData.username || '',
-            profileData.bio || '',
-            profileData.profile_image || '',
-            profileData.affiliation || '',
-            profileData.twitter_url || ''
-          ],
-          typeArguments: []
-        }
-      };t } from '@aptos-labs/wallet-adapter-react';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
 
 const MODULE_ADDRESS = '0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51';
 
@@ -48,21 +36,18 @@ export default function useProfileContract() {
 			if (!profileData?.username || !profileData?.twitter_url) {
 				throw new Error('Username and Twitter URL are required');
 			}
-			const payload = {
-				type: "entry_function_payload",
-				function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-				type_arguments: [],
-				arguments: [
-					profileData.username || '',
-					profileData.bio || '',
-					profileData.profile_image || '',
-					profileData.affiliation || '',
-					profileData.twitter_url || ''
-				]
-			};
-			
 			const transaction = {
-				payload
+				data: {
+					function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+					functionArguments: [
+						profileData.username || '',
+						profileData.bio || '',
+						profileData.profile_image || '',
+						profileData.affiliation || '',
+						profileData.twitter_url || ''
+					],
+					typeArguments: []
+				}
 			};
 			console.log('Submitting transaction:', transaction);
 			try {
