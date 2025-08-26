@@ -47,7 +47,7 @@ export default function useProfileInfo() {
         const resources = await res.json();
         console.log('Fetched resources for', addressHex, resources);
         const profileResource = resources.find(
-          (r) => r.type === '0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51::profiles::UserProfile'
+          (r) => r.type === '0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51::spacelyapp::UserProfile'
         );
         console.log('UserProfile resource:', profileResource);
         if (profileResource && profileResource.data) {
