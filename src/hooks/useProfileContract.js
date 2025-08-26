@@ -54,7 +54,7 @@ export default function useProfileContract() {
       const transaction = {
         sender: addressHex,
         data: {
-          function: `${MODULE_ADDRESS}::spacelyapp::init`,
+          function: `${MODULE_ADDRESS}::spacelyapp::initialize`,
           typeArguments: [],
           functionArguments: []
         }
