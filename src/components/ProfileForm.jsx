@@ -46,8 +46,10 @@ export default function ProfileForm({ isOpen, onClose, walletAddress, twitterPro
       return;
     }
     try {
-      await createProfile(formData);
-      onClose();
+      const success = await createProfile(formData);
+      if (success) {
+        onClose();
+      }
     } catch (error) {
       console.error('Error creating profile:', error);
       setError(error.message || 'Failed to create profile. Please try again.');
