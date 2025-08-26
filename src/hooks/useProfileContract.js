@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Aptos, Network } from '@aptos-labs/ts-sdk';
+import { Types } from 'aptos';
 
 export default function useProfileContract() {
   const wallet = useWallet();
   const { account, signAndSubmitTransaction, connected } = wallet;
   const [loading, setLoading] = useState(false);
   
-  const client = new Aptos({ network: Network.TESTNET });
   // Define MODULE_ADDRESS at the top level of the hook
   const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
 
@@ -51,17 +50,20 @@ export default function useProfileContract() {
         ? toHexString(account.address.data)
         : account.address;
 
-      const transaction = {
-        sender: addressHex,
-        data: {
-          function: `${MODULE_ADDRESS}::spacelyapp::initialize`,
-          typeArguments: [],
-          functionArguments: []
-        }
+      const payload = {
+        type: "entry_function_payload",
+        function: `${MODULE_ADDRESS}::spacelyapp::initialize`,
+        type_arguments: [],
+        arguments: []
       };
       
-      const pendingTx = await signAndSubmitTransaction(transaction);
-      await client.waitForTransaction({ transactionHash: pendingTx.hash });
+      console.log('Initializing with payload:', payload);
+      const pendingTx = await signAndSubmitTransaction(payload);
+      
+      // Wait for transaction using fetch
+      const response = await fetch(`https://fullnode.testnet.aptoslabs.com/v1/transactions/by_hash/${pendingTx.hash}`);
+      const txnResult = await response.json();
+      console.log('Initialization result:', txnResult);
       console.log('Profile collection initialized');
     } catch (error) {
       console.error('Error initializing profile collection:', error);
@@ -103,34 +105,32 @@ export default function useProfileContract() {
         ? toHexString(account.address.data)
         : account.address;
 
-      const transaction = {
-        sender: addressHex,
-        data: {
-          function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-          typeArguments: [],
-          functionArguments: [
-            profileData.username || '',
-            profileData.bio || '',
-            profileData.profile_image || '',
-            profileData.affiliation || '',
-            profileData.twitter_url || ''
-          ]
-        }
+      const payload = {
+        type: "entry_function_payload",
+        function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+        type_arguments: [],
+        arguments: [
+          profileData.username || '',
+          profileData.bio || '',
+          profileData.profile_image || '',
+          profileData.affiliation || '',
+          profileData.twitter_url || ''
+        ]
       };
 
       if (!signAndSubmitTransaction) {
         throw new Error('signAndSubmitTransaction is not available');
       }
 
-      console.log('Submitting transaction:', transaction);
-      const pendingTransaction = await signAndSubmitTransaction(transaction);
+      console.log('Submitting transaction:', payload);
+      const pendingTransaction = await signAndSubmitTransaction(payload);
       console.log('Transaction submitted:', pendingTransaction);
 
-      // Wait for transaction
+      // Wait for transaction using fetch
       try {
-        const txnHash = pendingTransaction.hash;
-        await client.waitForTransaction({ transactionHash: txnHash });
-        console.log('Transaction confirmed');
+        const response = await fetch(`https://fullnode.testnet.aptoslabs.com/v1/transactions/by_hash/${pendingTransaction.hash}`);
+        const txnResult = await response.json();
+        console.log('Transaction result:', txnResult);
         return txnHash;
       } catch (error) {
         console.error('Error waiting for transaction:', error);
