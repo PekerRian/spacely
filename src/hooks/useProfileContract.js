@@ -49,16 +49,18 @@ export default function useProfileContract() {
       // Use the published module address from Move.toml
       const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
       const transaction = {
-        type: "entry_function_payload",
-        function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-        type_arguments: [],
-        arguments: [
-          profileData.username || '',
-          profileData.bio || '',
-          profileData.profile_image || '',
-          profileData.affiliation || '',
-          profileData.twitter_url || ''
-        ]
+        sender: account.address,
+        data: {
+          function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+          typeArguments: [],
+          functionArguments: [
+            profileData.username || '',
+            profileData.bio || '',
+            profileData.profile_image || '',
+            profileData.affiliation || '',
+            profileData.twitter_url || ''
+          ]
+        }
       };
 
       if (!signAndSubmitTransaction) {
