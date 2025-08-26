@@ -24,7 +24,7 @@ export default function useProfileContract() {
       
       // Look for the UserProfile resource in the account's resources
       const profileResource = resources.find(
-        (r) => r.type === '0x986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5::spacely3::profiles::UserProfile'
+  (r) => r.type === '0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51::spacelyapp::UserProfile'
       );
 
       return !!profileResource;
@@ -47,11 +47,11 @@ export default function useProfileContract() {
         throw new Error('Wallet address not available');
       }
       // Use the published module address from Move.toml
-      const MODULE_ADDRESS = "0x986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5";
+  const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
       const transaction = {
         sender: account.address,
         data: {
-          function: `${MODULE_ADDRESS}::spacely3::profiles::create_profile_entry`,
+          function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
           typeArguments: [],
           functionArguments: [
             profileData.username || '',
@@ -90,9 +90,57 @@ export default function useProfileContract() {
     }
   };
 
+  const initializeModule = async () => {
+    try {
+      setLoading(true);
+      if (!connected || !account) {
+        throw new Error('Wallet not connected');
+      }
+      if (!account.address) {
+        throw new Error('Wallet address not available');
+      }
+
+  const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
+      const transaction = {
+        sender: account.address,
+        data: {
+          function: `${MODULE_ADDRESS}::spacelyapp::initialize`,
+          typeArguments: [],
+          functionArguments: []
+        }
+      };
+
+      if (!signAndSubmitTransaction) {
+        throw new Error('signAndSubmitTransaction is not available');
+      }
+
+      console.log('Initializing module:', transaction);
+      const pendingTransaction = await signAndSubmitTransaction(transaction);
+      console.log('Initialization submitted:', pendingTransaction);
+
+      // Wait for transaction
+      try {
+        const txnHash = pendingTransaction.hash;
+        await client.waitForTransaction({ transactionHash: txnHash });
+        console.log('Initialization confirmed');
+        return txnHash;
+      } catch (error) {
+        console.error('Error waiting for initialization:', error);
+        throw new Error('Initialization failed: ' + error.message);
+      }
+
+    } catch (error) {
+      console.error('Error initializing module:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     checkProfile,
     createProfile,
+    initializeModule,
     loading,
   };
 }

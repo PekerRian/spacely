@@ -1,5 +1,5 @@
 [package]
-name = "spacely3"
+name = "spacely1"
 version = "1.0.0"
 
 [dependencies]
@@ -10,5 +10,4 @@ MoveStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "a
 std = "0x1"
 aptos_framework = "0x1"
 aptos_std = "0x1"
-spacely3 = "986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5"
-spacely2 = "986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5"
+spacely1 = "19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51"

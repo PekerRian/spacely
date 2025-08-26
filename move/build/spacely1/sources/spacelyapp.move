@@ -1,4 +1,4 @@
-module spacely3::profiles {
+module spacely1::spacelyapp {
     use std::string::String;
     use std::vector;
     use std::error;
@@ -204,7 +204,20 @@ module spacely3::profiles {
         timestamp: u64,
     }
 
-    // Initialize module
+    // Public initialization function
+    public entry fun initialize(creator: &signer) {
+        init_module(creator);
+        // Initialize SpaceDirectory if it doesn't exist
+        if (!exists<SpaceDirectory>(@spacely1)) {
+            move_to(creator, SpaceDirectory {
+                spaces: table::new(),
+                categories: vector::empty(),
+                upcoming_spaces: vector::empty()
+            });
+        };
+    }
+
+    // Initialize module - must be private
     fun init_module(creator: &signer) {
         let constructor_ref = object::create_named_object(creator, vector::empty());
         let extend_ref = object::generate_extend_ref(&constructor_ref);
@@ -290,14 +303,14 @@ module spacely3::profiles {
         });
 
         // Initialize space directory if it doesn't exist
-        if (!exists<SpaceDirectory>(@spacely3)) {
+        if (!exists<SpaceDirectory>(@spacely1)) {
             move_to(creator, SpaceDirectory {
                 spaces: table::new(),
                 categories: vector::empty(),
                 upcoming_spaces: vector::empty()
             });
             // Initialize category vectors
-            let directory = borrow_global_mut<SpaceDirectory>(@spacely3);
+            let directory = borrow_global_mut<SpaceDirectory>(@spacely1);
             let i = 0;
             while (i <= CATEGORY_GAMING) {
                 vector::push_back(&mut directory.categories, vector::empty());
@@ -597,7 +610,7 @@ module spacely3::profiles {
         space.status = SPACE_STATUS_CANCELLED;
 
         // Remove from upcoming spaces if present
-        let directory = borrow_global_mut<SpaceDirectory>(@spacely3);
+        let directory = borrow_global_mut<SpaceDirectory>(@spacely1);
         let (found, index) = vector::index_of(&directory.upcoming_spaces, &space_id);
         if (found) {
             vector::remove(&mut directory.upcoming_spaces, index);
@@ -631,7 +644,7 @@ module spacely3::profiles {
         vector::push_back(&mut to_message_box.received_messages, message);
         
         event::emit_event(
-            &mut borrow_global_mut<ProfileCollection>(@spacely3).message_sent_events,
+            &mut borrow_global_mut<ProfileCollection>(@spacely1).message_sent_events,
             MessageSentEvent {
                 message_id,
                 from: from_addr,
@@ -655,7 +668,7 @@ module spacely3::profiles {
             if (message.id == message_id && !message.is_deleted) {
                 message.is_deleted = true;
                 event::emit_event(
-                    &mut borrow_global_mut<ProfileCollection>(@spacely3).message_deleted_events,
+                    &mut borrow_global_mut<ProfileCollection>(@spacely1).message_deleted_events,
                     MessageDeletedEvent {
                         message_id,
                         deleted_by: profile_addr,
@@ -674,7 +687,7 @@ module spacely3::profiles {
             if (message.id == message_id && !message.is_deleted) {
                 message.is_deleted = true;
                 event::emit_event(
-                    &mut borrow_global_mut<ProfileCollection>(@spacely3).message_deleted_events,
+                    &mut borrow_global_mut<ProfileCollection>(@spacely1).message_deleted_events,
                     MessageDeletedEvent {
                         message_id,
                         deleted_by: profile_addr,
@@ -795,14 +808,14 @@ module spacely3::profiles {
         vector::push_back(&mut space_list.space_ids, space_id);
 
         // Add to global directory
-        let space_directory = borrow_global_mut<SpaceDirectory>(@spacely3);
+        let space_directory = borrow_global_mut<SpaceDirectory>(@spacely1);
         table::add(&mut space_directory.spaces, space_id, profile_addr);
 
         // Emit event (use global ProfileCollection event handle)
         let tmp_ref = table::borrow(&space_list.spaces, space_id);
         let created_space = *tmp_ref;
         event::emit_event(
-            &mut borrow_global_mut<ProfileCollection>(@spacely3).space_created_events,
+            &mut borrow_global_mut<ProfileCollection>(@spacely1).space_created_events,
             SpaceCreatedEvent {
                 profile_addr,
                 space_id,
@@ -892,7 +905,7 @@ module spacely3::profiles {
         };
 
         // Add to global directory
-        let space_directory = borrow_global_mut<SpaceDirectory>(@spacely3);
+        let space_directory = borrow_global_mut<SpaceDirectory>(@spacely1);
         table::add(&mut space_directory.spaces, space_id, profile_addr);
         vector::push_back(&mut space_directory.upcoming_spaces, space_id);
 
@@ -900,7 +913,7 @@ module spacely3::profiles {
         let created_space_ref = table::borrow(&borrow_global<SpaceList>(profile_addr).spaces, space_id);
         let created_space = *created_space_ref;
         event::emit_event(
-            &mut borrow_global_mut<ProfileCollection>(@spacely3).space_created_events,
+            &mut borrow_global_mut<ProfileCollection>(@spacely1).space_created_events,
             SpaceCreatedEvent {
                 profile_addr,
                 space_id,
@@ -930,7 +943,7 @@ module spacely3::profiles {
         space.topics = new_topics;
 
         event::emit_event(
-            &mut borrow_global_mut<ProfileCollection>(@spacely3).space_updated_events,
+            &mut borrow_global_mut<ProfileCollection>(@spacely1).space_updated_events,
             SpaceUpdatedEvent {
                 profile_addr,
                 space_id,
@@ -1054,14 +1067,14 @@ module spacely3::profiles {
 
     // Space discovery
     public fun get_upcoming_spaces(): vector<u64> acquires SpaceDirectory {
-        let directory = borrow_global<SpaceDirectory>(@spacely3);
+        let directory = borrow_global<SpaceDirectory>(@spacely1);
         directory.upcoming_spaces
     }
 
     public fun get_spaces_by_category(category: u8): vector<u64> acquires SpaceDirectory {
         assert!(category <= CATEGORY_GAMING, error::invalid_argument(INVALID_CATEGORY));
         
-        let directory = borrow_global<SpaceDirectory>(@spacely3);
+        let directory = borrow_global<SpaceDirectory>(@spacely1);
         
         let len = (vector::length(&directory.categories) as u8);
         if (category < len) {
@@ -1076,6 +1089,14 @@ module spacely3::profiles {
         let addr = signer::address_of(creator);
         if (!exists<ProfileCollection>(addr)) {
             init_module(creator);
-        }
+        };
+        // Initialize SpaceDirectory if needed
+        if (!exists<SpaceDirectory>(@spacely1)) {
+            move_to(creator, SpaceDirectory {
+                spaces: table::new(),
+                categories: vector::empty(),
+                upcoming_spaces: vector::empty()
+            });
+        };
     }
 }
