@@ -41,17 +41,15 @@ export default function UserPage() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
+
+  // Only show the ProfileForm if the user does NOT have an on-chain profile
   useEffect(() => {
-    const checkAndShowProfileForm = async () => {
-      if (walletAddress) {
-        const hasProfile = await checkProfile(walletAddress);
-        if (!hasProfile) {
-          setShowProfileForm(true);
-        }
-      }
-    };
-    checkAndShowProfileForm();
-  }, [walletAddress, checkProfile]);
+    if (userProfile) {
+      setShowProfileForm(false);
+    } else if (walletAddress) {
+      setShowProfileForm(true);
+    }
+  }, [userProfile, walletAddress]);
 
   const [tab, setTab] = useState('badges');
   let content;
