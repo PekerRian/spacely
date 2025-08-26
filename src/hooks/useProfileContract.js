@@ -24,7 +24,7 @@ export default function useProfileContract() {
       
       // Look for the UserProfile resource in the account's resources
       const profileResource = resources.find(
-        (r) => r.type === '0x7a0bc01a9e12a99db2350fe7b96595cf1577adb3e05a5afcf4d3d5faacb7f228::profiles3::UserProfile'
+        (r) => r.type === '0x986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5::profiles::UserProfile'
       );
 
       return !!profileResource;
@@ -47,11 +47,11 @@ export default function useProfileContract() {
         throw new Error('Wallet address not available');
       }
       // Use the published module address from Move.toml
-      const MODULE_ADDRESS = "0x7a0bc01a9e12a99db2350fe7b96595cf1577adb3e05a5afcf4d3d5faacb7f228";
+      const MODULE_ADDRESS = "0x986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5";
       const transaction = {
         sender: account.address,
         data: {
-          function: `${MODULE_ADDRESS}::profiles3::create_profile_entry`,
+          function: `${MODULE_ADDRESS}::profiles::create_profile_entry`,
           typeArguments: [],
           functionArguments: [
             profileData.username || '',
