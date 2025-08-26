@@ -8,15 +8,23 @@ export default function useProfileInfo() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    const toHexString = (addr) => {
+      if (typeof addr === 'string') return addr.startsWith('0x') ? addr : '0x' + addr;
+      if (addr?.data && Array.isArray(addr.data)) {
+        return '0x' + Array.from(addr.data).map(x => x.toString(16).padStart(2, '0')).join('');
+      }
+      return '';
+    };
     const fetchProfile = async () => {
-      if (!account?.address) {
+      const addressHex = toHexString(account?.address);
+      if (!addressHex) {
         setProfile(null);
         return;
       }
       setLoading(true);
       try {
         const res = await fetch(
-          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${account.address}/resources`
+          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${addressHex}/resources`
         );
         if (!res.ok) throw new Error('Failed to fetch resources');
         const resources = await res.json();
