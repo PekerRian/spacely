@@ -34,10 +34,39 @@ export default function useProfileContract() {
     }
   };
 
+  const initProfileCollection = async () => {
+    try {
+      setLoading(true);
+      if (!connected || !account) {
+        throw new Error('Wallet not connected');
+      }
+      const transaction = {
+        sender: account.address,
+        data: {
+          function: `${MODULE_ADDRESS}::spacelyapp::init`,
+          typeArguments: [],
+          functionArguments: []
+        }
+      };
+      
+      const pendingTx = await signAndSubmitTransaction(transaction);
+      await client.waitForTransaction({ transactionHash: pendingTx.hash });
+      console.log('Profile collection initialized');
+    } catch (error) {
+      console.error('Error initializing profile collection:', error);
+      // If error is about already initialized, we can ignore it
+      if (!error.message?.includes('already exists')) {
+        throw error;
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const createProfile = async (profileData) => {
     try {
       setLoading(true);
-          if (!connected || !account) {
+      if (!connected || !account) {
         throw new Error('Wallet not connected');
       }
       if (!profileData?.username || !profileData?.twitter_url) {
@@ -45,6 +74,13 @@ export default function useProfileContract() {
       }
       if (!account.address) {
         throw new Error('Wallet address not available');
+      }
+      
+      // Try to initialize first (if not already initialized)
+      try {
+        await initProfileCollection();
+      } catch (error) {
+        console.log('Initialization skipped:', error.message);
       }
       // Use the published module address from Move.toml
       const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
@@ -140,7 +176,7 @@ export default function useProfileContract() {
   return {
     checkProfile,
     createProfile,
-    initializeModule,
+    initProfileCollection,
     loading,
   };
 }
