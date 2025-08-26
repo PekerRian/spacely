@@ -27,8 +27,8 @@ export function WalletProvider({ children }) {
         network: Network.TESTNET,
         networkInfo: {
           nodeUrl: "https://fullnode.testnet.aptoslabs.com/v1",
-          name: Network.TESTNET,
-        } as NetworkInfo,
+          name: "testnet"
+        }
       }}
       onError={(error) => {
         console.error('Wallet error:', error?.name, error?.message);
