@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import useProfileContract from '../hooks/useProfileContract';
+import useProfileInfo from '../hooks/useProfileInfo';
 import ProfileForm from '../components/ProfileForm';
 
 export default function UserPage() {
@@ -24,6 +25,7 @@ export default function UserPage() {
   const [twitterProfile, setTwitterProfile] = useState(null);
   const [showProfileForm, setShowProfileForm] = useState(false);
   const { checkProfile } = useProfileContract();
+  const { profile: userProfile, loading: profileLoading } = useProfileInfo();
 
   useEffect(() => {
     const handleMessage = (event) => {
@@ -78,37 +80,37 @@ export default function UserPage() {
     <div className="page-container user-flex-row">
       <div className="user-left-box">
         <div className="profile-card">
-          <img 
-            className="profile-avatar" 
-            src={twitterProfile?.profile_image || "https://placehold.co/120x120/22ff22/111?text=IMG"} 
-            alt="Profile" 
+          <img
+            className="profile-avatar"
+            src={userProfile?.profile_image || "https://placehold.co/120x120/22ff22/111?text=IMG"}
+            alt="Profile"
           />
           <div className="profile-info">
             <div className="profile-row">
-              <span className="profile-label">Username:</span> 
-              <span className="profile-value">{twitterProfile?.handle || 'spaceuser123'}</span>
+              <span className="profile-label">Username:</span>
+              <span className="profile-value">{userProfile?.username || 'spaceuser123'}</span>
             </div>
             <div className="profile-row">
-              <span className="profile-label">Twitter:</span> 
+              <span className="profile-label">Twitter:</span>
               <span className="profile-value">
-                {twitterProfile?.url ? (
-                  <a href={twitterProfile.url} target="_blank" rel="noopener noreferrer">
-                    @{twitterProfile.handle}
+                {userProfile?.twitter_url ? (
+                  <a href={userProfile.twitter_url} target="_blank" rel="noopener noreferrer">
+                    {userProfile.twitter_url.replace('https://twitter.com/', '@')}
                   </a>
                 ) : '@spaceuser'}
               </span>
             </div>
             <div className="profile-row">
-              <span className="profile-label">Affiliation:</span> 
-              <span className="profile-value">Galactic Org</span>
+              <span className="profile-label">Affiliation:</span>
+              <span className="profile-value">{userProfile?.affiliation || 'Galactic Org'}</span>
             </div>
             <div className="profile-row">
-              <span className="profile-label">Connections:</span> 
+              <span className="profile-label">Connections:</span>
               <span className="profile-value">42</span>
             </div>
             <div className="profile-row profile-bio-row">
-              <span className="profile-label">Bio:</span> 
-              <span className="profile-value">{twitterProfile?.bio || 'Exploring the universe, one badge at a time.'}</span>
+              <span className="profile-label">Bio:</span>
+              <span className="profile-value">{userProfile?.bio || 'Exploring the universe, one badge at a time.'}</span>
             </div>
           </div>
         </div>
@@ -121,7 +123,7 @@ export default function UserPage() {
         </div>
         {content}
       </div>
-      <ProfileForm 
+      <ProfileForm
         isOpen={showProfileForm}
         onClose={() => setShowProfileForm(false)}
         walletAddress={walletAddress}
