@@ -24,7 +24,7 @@ export default function useProfileContract() {
       
       // Look for the UserProfile resource in the account's resources
       const profileResource = resources.find(
-        (r) => r.type === '0x986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5::profiles::UserProfile'
+        (r) => r.type === '0x986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5::spacely3::profiles::UserProfile'
       );
 
       return !!profileResource;
@@ -51,7 +51,7 @@ export default function useProfileContract() {
       const transaction = {
         sender: account.address,
         data: {
-          function: `${MODULE_ADDRESS}::profiles::create_profile_entry`,
+          function: `${MODULE_ADDRESS}::spacely3::profiles::create_profile_entry`,
           typeArguments: [],
           functionArguments: [
             profileData.username || '',
