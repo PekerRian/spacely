@@ -1,6 +1,18 @@
 
 import { useState } from 'react';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
+i      const transaction = {
+        data: {
+          function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+          functionArguments: [
+            profileData.username || '',
+            profileData.bio || '',
+            profileData.profile_image || '',
+            profileData.affiliation || '',
+            profileData.twitter_url || ''
+          ],
+          typeArguments: []
+        }
+      };t } from '@aptos-labs/wallet-adapter-react';
 
 const MODULE_ADDRESS = '0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51';
 
@@ -36,23 +48,31 @@ export default function useProfileContract() {
 			if (!profileData?.username || !profileData?.twitter_url) {
 				throw new Error('Username and Twitter URL are required');
 			}
-			const transaction = {
+			const payload = {
 				type: "entry_function_payload",
 				function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+				type_arguments: [],
 				arguments: [
 					profileData.username || '',
 					profileData.bio || '',
 					profileData.profile_image || '',
 					profileData.affiliation || '',
 					profileData.twitter_url || ''
-				],
-				type_arguments: []
+				]
+			};
+			
+			const transaction = {
+				payload
 			};
 			console.log('Submitting transaction:', transaction);
-			const pendingTransaction = await signAndSubmitTransaction(transaction);
-			// Wait for transaction
-			if (pendingTransaction) {
-				await pendingTransaction.wait();
+			try {
+				const pendingTransaction = await signAndSubmitTransaction(transaction);
+				const result = await pendingTransaction.wait();
+				console.log('Transaction successful:', result.hash);
+				return true;
+			} catch (error) {
+				console.error('Transaction failed:', error);
+				throw error;
 			}
 			return true;
 		} catch (error) {
