@@ -14,7 +14,11 @@ export default function useProfileInfo() {
     }
     const toHexString = (addr) => {
       if (!addr) return '';
-      // If addr is an object with a 'data' property, use that
+      // If addr is an object with a 'data' property that is a Uint8Array
+      if (typeof addr === 'object' && addr.data && addr.data instanceof Uint8Array) {
+        return '0x' + Array.from(addr.data).map(x => x.toString(16).padStart(2, '0')).join('');
+      }
+      // If addr is an object with a 'data' property that is an array
       if (typeof addr === 'object' && addr.data && Array.isArray(addr.data)) {
         return '0x' + Array.from(addr.data).map(x => x.toString(16).padStart(2, '0')).join('');
       }
