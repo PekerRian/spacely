@@ -147,7 +147,6 @@ export default function useProfileContract() {
         : account.address;
 
       const payload = {
-        type: "entry_function_payload",
         function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
         type_arguments: [],
         arguments: [
