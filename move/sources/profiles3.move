@@ -25,6 +25,7 @@ module spacely3::profiles3 {
         bio: String,
         profile_image: String,
         affiliation: String,
+        twitter_url: String,
         friend_count: u64,
     // created_at: u64,
     // updated_at: u64,
@@ -159,9 +160,10 @@ module spacely3::profiles3 {
         username: String,
         bio: String,
         profile_image: String,
-        affiliation: String
+        affiliation: String,
+        twitter_url: String
     ) acquires ProfileCollection {
-        create_profile(creator, username, bio, profile_image, affiliation);
+        create_profile(creator, username, bio, profile_image, affiliation, twitter_url);
     }
 
     // Internal profile creation function
@@ -170,7 +172,8 @@ module spacely3::profiles3 {
         username: String,
         bio: String,
         profile_image: String,
-        affiliation: String
+        affiliation: String,
+        twitter_url: String
     ): Object<UserProfile> acquires ProfileCollection {
         let admin_addr = signer::address_of(creator); // always use admin for tests
     // Enforce unique username
@@ -188,6 +191,7 @@ module spacely3::profiles3 {
             bio,
             profile_image,
             affiliation,
+            twitter_url,
             friend_count: 0,
         };
         vector::push_back(&mut collection.usernames, username);
@@ -294,7 +298,29 @@ module spacely3::profiles3 {
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
         
         profile_data.affiliation = new_affiliation;
-    // profile_data.updated_at = 0;
+    }
+
+    public entry fun update_twitter_url(
+        account: &signer,
+        profile: Object<UserProfile>,
+        new_twitter_url: String,
+    ) acquires UserProfile {
+        let profile_data = borrow_global_mut<UserProfile>(object::object_address(&profile));
+        assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
+        
+        profile_data.twitter_url = new_twitter_url;
+    }
+
+    public entry fun update_twitter(
+        account: &signer,
+        profile: Object<UserProfile>,
+        new_twitter: String,
+    ) acquires UserProfile {
+        let profile_data = borrow_global_mut<UserProfile>(object::object_address(&profile));
+        assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
+        
+        // TODO: Add twitter field to UserProfile struct
+        abort error::not_implemented(1)
     }
 
     // Friend management functions
@@ -337,12 +363,11 @@ module spacely3::profiles3 {
     }
 
     // Badge management functions
-    public entry fun add_badge(account: &signer, profile: Object<UserProfile>, badge_hash: String) acquires UserProfile, Badges {
+    public entry fun add_badge(sender: &signer, profile: Object<UserProfile>, badge_hash: String) acquires UserProfile, Badges {
         let profile_addr = object::object_address(&profile);
-        let profile_data = borrow_global<UserProfile>(profile_addr);
-        assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
-        
         let badges = borrow_global_mut<Badges>(profile_addr);
+        
+        // Only check for uniqueness, anyone can send badges
         if (!vector::contains(&badges.badges, &badge_hash)) {
             vector::push_back(&mut badges.badges, badge_hash);
         };

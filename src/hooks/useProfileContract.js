@@ -56,9 +56,9 @@ export default function useProfileContract() {
           functionArguments: [
             profileData.username || '',
             profileData.bio || '',
-            profileData.profile_image || '',
+            profileData.profile_image || '',  // Keep profile_image separate
             profileData.affiliation || '',
-            profileData.twitter_url || ''
+            profileData.twitter_url || ''  // Add twitter_url as a separate field
           ]
         }
       };
