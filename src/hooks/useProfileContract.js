@@ -47,20 +47,18 @@ export default function useProfileContract() {
         throw new Error('Wallet address not available');
       }
       // Use the published module address from Move.toml
-  const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
+      const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
       const transaction = {
-        sender: account.address,
-        data: {
-          function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-          typeArguments: [],
-          functionArguments: [
-            profileData.username || '',
-            profileData.bio || '',
-            profileData.profile_image || '',  // Keep profile_image separate
-            profileData.affiliation || '',
-            profileData.twitter_url || ''  // Add twitter_url as a separate field
-          ]
-        }
+        type: "entry_function_payload",
+        function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+        type_arguments: [],
+        arguments: [
+          profileData.username || '',
+          profileData.bio || '',
+          profileData.profile_image || '',
+          profileData.affiliation || '',
+          profileData.twitter_url || ''
+        ]
       };
 
       if (!signAndSubmitTransaction) {
