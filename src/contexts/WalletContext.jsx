@@ -15,18 +15,3 @@ export function WalletProvider({ children }) {
     </AptosWalletAdapterProvider>
   );
 }
-
-export function WalletProvider({ children }) {
-  return (
-    <AptosWalletAdapterProvider
-      plugins={wallets}
-      autoConnect={true}
-      network="testnet"
-      onError={(error) => {
-        console.error('Wallet error:', error?.name, error?.message);
-      }}
-    >
-      {children}
-    </AptosWalletAdapterProvider>
-  );
-}
