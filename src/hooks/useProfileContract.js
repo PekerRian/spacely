@@ -8,6 +8,8 @@ export default function useProfileContract() {
   const [loading, setLoading] = useState(false);
   
   const client = new Aptos({ network: Network.TESTNET });
+  // Define MODULE_ADDRESS at the top level of the hook
+  const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
 
   const checkProfile = async (address) => {
     try {
@@ -40,8 +42,13 @@ export default function useProfileContract() {
       if (!connected || !account) {
         throw new Error('Wallet not connected');
       }
+      // Convert address to hex string if it's a Uint8Array
+      const addressHex = account.address.data 
+        ? `0x${Buffer.from(account.address.data).toString('hex')}`
+        : account.address;
+        
       const transaction = {
-        sender: account.address,
+        sender: addressHex,
         data: {
           function: `${MODULE_ADDRESS}::spacelyapp::init`,
           typeArguments: [],
@@ -82,10 +89,14 @@ export default function useProfileContract() {
       } catch (error) {
         console.log('Initialization skipped:', error.message);
       }
-      // Use the published module address from Move.toml
-      const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
+      // MODULE_ADDRESS is now defined at the top of the hook
+      // Convert address to hex string if it's a Uint8Array
+      const addressHex = account.address.data 
+        ? `0x${Buffer.from(account.address.data).toString('hex')}`
+        : account.address;
+        
       const transaction = {
-        sender: account.address,
+        sender: addressHex,
         data: {
           function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
           typeArguments: [],
