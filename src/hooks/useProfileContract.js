@@ -1,6 +1,32 @@
 import { useState } from 'react';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Types } from 'aptos';
+import { useWallet } from '@aptos-labs/wallet-adapter-reac  const crea  const createProfile = async (handle, name, bio) => {
+    try {
+      setLoading(true);
+      
+      if (!signAndSubmitTransaction) {
+        throw new Error('Transaction signing not available - wallet may not be properly connected');
+      }
+
+      if (!connected || !account) {
+        throw new Error('Wallet not connected - please connect your wallet first');
+      }
+
+      if (!account.address) {
+        throw new Error('Wallet address not available - please ensure wallet is properly connected');
+      }ile = async (handle, name, bio) => {
+    try {
+      setLoading(true);
+      
+      if (!signAndSubmitTransaction) {
+        throw new Error('Transaction signing not available - wallet may not be properly connected');
+      }
+
+      if (!connected || !account) {
+        throw new Error('Wallet not connected - please connect your wallet first');
+      }
+
+      if (!account.address) {
+        throw new Error('Wallet address not available - please ensure wallet is properly connected');mport { Types } from 'aptos';
 
 export default function useProfileContract() {
   const wallet = useWallet();
@@ -171,21 +197,20 @@ export default function useProfileContract() {
       }
 
   const MODULE_ADDRESS = "0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51";
-      const transaction = {
-        sender: account.address,
-        data: {
-          function: `${MODULE_ADDRESS}::spacelyapp::initialize`,
-          typeArguments: [],
-          functionArguments: []
-        }
-      };
-
+      
       if (!signAndSubmitTransaction) {
         throw new Error('signAndSubmitTransaction is not available');
       }
 
-      console.log('Initializing module:', transaction);
-      const pendingTransaction = await signAndSubmitTransaction(transaction);
+      const payload = {
+        type: "entry_function_payload",
+        function: `${MODULE_ADDRESS}::spacelyapp::initialize`,
+        type_arguments: [],
+        arguments: []
+      };
+
+      console.log('Initializing module:', payload);
+      const pendingTransaction = await signAndSubmitTransaction(payload);
       console.log('Initialization submitted:', pendingTransaction);
 
       // Wait for transaction
