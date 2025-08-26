@@ -16,16 +16,18 @@ export default function useProfileInfo() {
       return '';
     };
     const fetchProfile = async () => {
+      console.log('Fetching profile for account.address:', account?.address);
       const addressHex = toHexString(account?.address);
+      console.log('Converted addressHex:', addressHex);
       if (!addressHex) {
         setProfile(null);
         return;
       }
       setLoading(true);
+      const url = `https://fullnode.testnet.aptoslabs.com/v1/accounts/${addressHex}/resources`;
+      console.log('Fetch URL:', url);
       try {
-        const res = await fetch(
-          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${addressHex}/resources`
-        );
+        const res = await fetch(url);
         if (!res.ok) throw new Error('Failed to fetch resources');
         const resources = await res.json();
         console.log('Fetched resources for', account.address, resources);
