@@ -50,6 +50,21 @@ export default function useProfileContract() {
         ? toHexString(account.address.data)
         : account.address;
 
+      // First check if collection exists
+      const response = await fetch(
+        `https://fullnode.testnet.aptoslabs.com/v1/accounts/${MODULE_ADDRESS}/resources`
+      );
+      const resources = await response.json();
+      
+      const collectionExists = resources.some(
+        r => r.type === `${MODULE_ADDRESS}::spacelyapp::ProfileCollection`
+      );
+
+      if (collectionExists) {
+        console.log('ProfileCollection already initialized');
+        return; // Skip initialization if already exists
+      }
+
       const payload = {
         type: "entry_function_payload",
         function: `${MODULE_ADDRESS}::spacelyapp::initialize`,
@@ -61,8 +76,8 @@ export default function useProfileContract() {
       const pendingTx = await signAndSubmitTransaction(payload);
       
       // Wait for transaction using fetch
-      const response = await fetch(`https://fullnode.testnet.aptoslabs.com/v1/transactions/by_hash/${pendingTx.hash}`);
-      const txnResult = await response.json();
+      const txResponse = await fetch(`https://fullnode.testnet.aptoslabs.com/v1/transactions/by_hash/${pendingTx.hash}`);
+      const txnResult = await txResponse.json();
       console.log('Initialization result:', txnResult);
       console.log('Profile collection initialized');
     } catch (error) {
