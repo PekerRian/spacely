@@ -37,11 +37,10 @@ export default function useProfileContract() {
 				throw new Error('Username and Twitter URL are required');
 			}
 
-			const transaction = {
-				type: "entry_function_payload",
+			const payloadData = {
 				function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-				type_arguments: [],
-				arguments: [
+				typeArguments: [],
+				functionArguments: [
 					profileData.username || '',
 					profileData.bio || '',
 					profileData.profile_image || '',
@@ -50,16 +49,48 @@ export default function useProfileContract() {
 				]
 			};
 
-			console.log('Submitting transaction:', transaction);
-			try {
-				const pendingTransaction = await signAndSubmitTransaction(transaction);
-				const result = await pendingTransaction.wait();
-				console.log('Transaction successful:', result.hash);
-				return true;
-			} catch (error) {
-				console.error('Transaction failed:', error);
-				throw error;
+			if (typeof signAndSubmitTransaction !== 'function') {
+				throw new Error('signAndSubmitTransaction is not available from wallet adapter');
 			}
+
+			// Try multiple documented payload shapes to support different adapter versions
+			const attempts = [
+				{ label: 'data.camelCase', payload: { data: payloadData } },
+				{ label: 'data.snake_case', payload: { data: {
+						function: payloadData.function,
+						type_arguments: [],
+						arguments: payloadData.functionArguments
+					} } },
+				{ label: 'entry_function_payload', payload: {
+						type: 'entry_function_payload',
+						function: payloadData.function,
+						type_arguments: [],
+						arguments: payloadData.functionArguments
+					} }
+			];
+
+			let lastError = null;
+			for (const attempt of attempts) {
+				console.log(`Attempting signAndSubmitTransaction with ${attempt.label}`, attempt.payload);
+				try {
+					const response = await signAndSubmitTransaction(attempt.payload);
+					console.log(`Response for ${attempt.label}:`, response);
+					if (response && (response.hash || response.transactionHash)) {
+						return true;
+					}
+					// Some adapters return a pending object with hash
+					if (response && response.hash) return true;
+					// If response undefined but no error thrown, break and return truthy
+					if (response) return true;
+				} catch (err) {
+					console.error(`Attempt ${attempt.label} failed:`, err);
+					lastError = err;
+				}
+			}
+
+			// All attempts failed
+			console.error('All signAndSubmitTransaction payload attempts failed');
+			throw lastError || new Error('signAndSubmitTransaction failed with unknown error');
 			return true;
 		} catch (error) {
 			console.error('Error creating profile:', error);
