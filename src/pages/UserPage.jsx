@@ -21,6 +21,7 @@ export default function UserPage() {
   };
   const { account } = useWallet();
   const walletAddress = account?.address;
+  console.log('UserPage rendered, account:', account);
   console.log('UserPage rendered, walletAddress:', walletAddress);
   const [twitterProfile, setTwitterProfile] = useState(null);
   const [showProfileForm, setShowProfileForm] = useState(false);
