@@ -36,7 +36,9 @@ export default function useProfileContract() {
 			if (!profileData?.username || !profileData?.twitter_url) {
 				throw new Error('Username and Twitter URL are required');
 			}
-			const payload = {
+			
+			const transaction = {
+				type: "entry_function_payload",
 				function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
 				type_arguments: [],
 				arguments: [
@@ -48,9 +50,6 @@ export default function useProfileContract() {
 				]
 			};
 
-			const transaction = {
-				payload
-			};
 			console.log('Submitting transaction:', transaction);
 			try {
 				const pendingTransaction = await signAndSubmitTransaction(transaction);
