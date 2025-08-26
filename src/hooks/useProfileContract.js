@@ -43,10 +43,14 @@ export default function useProfileContract() {
         throw new Error('Wallet not connected');
       }
       // Convert address to hex string if it's a Uint8Array
+      const toHexString = (bytes) => {
+        return '0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      };
+      
       const addressHex = account.address.data 
-        ? `0x${Buffer.from(account.address.data).toString('hex')}`
+        ? toHexString(account.address.data)
         : account.address;
-        
+
       const transaction = {
         sender: addressHex,
         data: {
@@ -91,10 +95,14 @@ export default function useProfileContract() {
       }
       // MODULE_ADDRESS is now defined at the top of the hook
       // Convert address to hex string if it's a Uint8Array
+      const toHexString = (bytes) => {
+        return '0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      };
+      
       const addressHex = account.address.data 
-        ? `0x${Buffer.from(account.address.data).toString('hex')}`
+        ? toHexString(account.address.data)
         : account.address;
-        
+
       const transaction = {
         sender: addressHex,
         data: {
