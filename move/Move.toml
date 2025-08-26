@@ -10,4 +10,5 @@ MoveStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "a
 std = "0x1"
 aptos_framework = "0x1"
 aptos_std = "0x1"
-spacely3 = "0x7a0bc01a9e12a99db2350fe7b96595cf1577adb3e05a5afcf4d3d5faacb7f228"
+spacely3 = "986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5"
+spacely2 = "986e077e384095494bac3c00864a7541818e1606d9261ee3de6fb01c3ccbf3d5"

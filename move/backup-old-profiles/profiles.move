@@ -1,4 +1,4 @@
-module spacely3::profiles3 {
+module spacely3::profiles {
     use std::string::String;
     use std::vector;
     use std::error;
@@ -16,6 +16,15 @@ module spacely3::profiles3 {
     const NOT_FRIENDS: u64 = 5;
     const INVALID_STATE: u64 = 6;
     const TRANSFER_DISABLED: u64 = 7;
+    const CAPABILITY_NOT_FOUND: u64 = 8;
+    
+    #[resource_group_member(group = aptos_framework::object::ObjectGroup)]
+    struct ProfileCapability has key, store {
+        can_update_profile: bool,
+        can_manage_friends: bool,
+        can_manage_spaces: bool,
+        can_send_messages: bool,
+    }
 
     #[resource_group_member(group = aptos_framework::object::ObjectGroup)]
     struct UserProfile has key, drop {
@@ -25,10 +34,9 @@ module spacely3::profiles3 {
         bio: String,
         profile_image: String,
         affiliation: String,
-        twitter_url: String,
         friend_count: u64,
-    // created_at: u64,
-    // updated_at: u64,
+        created_at: u64,
+        updated_at: u64,
     }
 
     #[resource_group_member(group = aptos_framework::object::ObjectGroup)]
@@ -154,26 +162,13 @@ module spacely3::profiles3 {
         });
     }
 
-    // Entry point for profile creation
-    public entry fun create_profile_entry(
-        creator: &signer,
-        username: String,
-        bio: String,
-        profile_image: String,
-        affiliation: String,
-        twitter_url: String
-    ) acquires ProfileCollection {
-        create_profile(creator, username, bio, profile_image, affiliation, twitter_url);
-    }
-
-    // Internal profile creation function
+    // Create a new profile
     public fun create_profile(
         creator: &signer,
         username: String,
         bio: String,
         profile_image: String,
-        affiliation: String,
-        twitter_url: String
+        affiliation: String
     ): Object<UserProfile> acquires ProfileCollection {
         let admin_addr = signer::address_of(creator); // always use admin for tests
     // Enforce unique username
@@ -184,6 +179,7 @@ module spacely3::profiles3 {
         let constructor_ref = object::create_object(admin_addr);
         let extend_ref = object::generate_extend_ref(&constructor_ref);
 
+        let now = timestamp::now_seconds();
         let profile = UserProfile {
             extend_ref,
             creator: admin_addr,
@@ -191,8 +187,9 @@ module spacely3::profiles3 {
             bio,
             profile_image,
             affiliation,
-            twitter_url,
             friend_count: 0,
+            created_at: now,
+            updated_at: now,
         };
         vector::push_back(&mut collection.usernames, username);
 
@@ -200,6 +197,12 @@ module spacely3::profiles3 {
         move_to(&object::generate_signer(&constructor_ref), FriendList { friends: vector::empty() });
         move_to(&object::generate_signer(&constructor_ref), Badges { badges: vector::empty() });
         move_to(&object::generate_signer(&constructor_ref), ProfileMutability { can_transfer: true });
+        move_to(&object::generate_signer(&constructor_ref), ProfileCapability {
+            can_update_profile: true,
+            can_manage_friends: true,
+            can_manage_spaces: true,
+            can_send_messages: true,
+        });
         move_to(&object::generate_signer(&constructor_ref), MessageBox {
             sent_messages: vector::empty(),
             received_messages: vector::empty(),
@@ -217,7 +220,7 @@ module spacely3::profiles3 {
                 profile_id: profile_addr,
                 creator: admin_addr,
                 username,
-                timestamp: 0,
+                timestamp: timestamp::now_seconds(),
             },
         );
 
@@ -233,8 +236,8 @@ module spacely3::profiles3 {
             profile_data.profile_image,
             profile_data.affiliation,
             profile_data.friend_count,
-            0,
-            0,
+            profile_data.created_at,
+            profile_data.updated_at,
             profile_data.creator,
         )
     }
@@ -244,13 +247,16 @@ module spacely3::profiles3 {
         account: &signer,
         profile: Object<UserProfile>,
         new_username: String,
-    ) acquires UserProfile, ProfileCollection {
-        let profile_data = borrow_global_mut<UserProfile>(object::object_address(&profile));
+    ) acquires UserProfile, ProfileCollection, ProfileCapability {
+        let profile_addr = object::object_address(&profile);
+        let profile_data = borrow_global_mut<UserProfile>(profile_addr);
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
+        assert!(check_capability(profile, 1), error::permission_denied(CAPABILITY_NOT_FOUND));
         
+        let now = timestamp::now_seconds();
         let old_username = profile_data.username;
         profile_data.username = new_username;
-    // profile_data.updated_at = 0;
+        profile_data.updated_at = now;
 
         event::emit_event(
             &mut borrow_global_mut<ProfileCollection>(object::object_address(&profile)).update_events,
@@ -260,7 +266,7 @@ module spacely3::profiles3 {
                 new_username,
                 old_bio: profile_data.bio,
                 new_bio: profile_data.bio,
-                timestamp: 0,
+                timestamp: timestamp::now_seconds(),
             },
         );
     }
@@ -274,7 +280,7 @@ module spacely3::profiles3 {
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
         
         profile_data.bio = new_bio;
-    // profile_data.updated_at = 0;
+        profile_data.updated_at = timestamp::now_seconds();
     }
 
     public entry fun update_profile_image(
@@ -286,7 +292,7 @@ module spacely3::profiles3 {
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
         
         profile_data.profile_image = new_image;
-    // profile_data.updated_at = 0;
+        profile_data.updated_at = timestamp::now_seconds();
     }
 
     public entry fun update_affiliation(
@@ -298,29 +304,7 @@ module spacely3::profiles3 {
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
         
         profile_data.affiliation = new_affiliation;
-    }
-
-    public entry fun update_twitter_url(
-        account: &signer,
-        profile: Object<UserProfile>,
-        new_twitter_url: String,
-    ) acquires UserProfile {
-        let profile_data = borrow_global_mut<UserProfile>(object::object_address(&profile));
-        assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
-        
-        profile_data.twitter_url = new_twitter_url;
-    }
-
-    public entry fun update_twitter(
-        account: &signer,
-        profile: Object<UserProfile>,
-        new_twitter: String,
-    ) acquires UserProfile {
-        let profile_data = borrow_global_mut<UserProfile>(object::object_address(&profile));
-        assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
-        
-        // TODO: Add twitter field to UserProfile struct
-        abort error::not_implemented(1)
+        profile_data.updated_at = timestamp::now_seconds();
     }
 
     // Friend management functions
@@ -408,6 +392,37 @@ module spacely3::profiles3 {
         borrow_global<ProfileMutability>(object::object_address(&profile)).can_transfer
     }
 
+    fun check_capability(profile: Object<UserProfile>, capability_type: u8): bool acquires ProfileCapability {
+        let cap = borrow_global<ProfileCapability>(object::object_address(&profile));
+        if (capability_type == 1) {
+            cap.can_update_profile
+        } else if (capability_type == 2) {
+            cap.can_manage_friends
+        } else if (capability_type == 3) {
+            cap.can_manage_spaces
+        } else if (capability_type == 4) {
+            cap.can_send_messages
+        } else {
+            false
+        }
+    }
+
+    public fun has_update_capability(profile: Object<UserProfile>): bool acquires ProfileCapability {
+        check_capability(profile, 1)
+    }
+
+    public fun has_friend_capability(profile: Object<UserProfile>): bool acquires ProfileCapability {
+        check_capability(profile, 2)
+    }
+
+    public fun has_space_capability(profile: Object<UserProfile>): bool acquires ProfileCapability {
+        check_capability(profile, 3)
+    }
+
+    public fun has_message_capability(profile: Object<UserProfile>): bool acquires ProfileCapability {
+        check_capability(profile, 4)
+    }
+
     // Profile deletion
     public entry fun delete_profile(account: &signer, profile: Object<UserProfile>) acquires UserProfile, FriendList, Badges, ProfileMutability, ProfileCollection {
         let profile_addr = object::object_address(&profile);
@@ -424,7 +439,7 @@ module spacely3::profiles3 {
             &mut borrow_global_mut<ProfileCollection>(profile_addr).burn_events,
             BurnProfileEvent {
                 profile_id: profile_addr,
-                timestamp: 0,
+                timestamp: timestamp::now_seconds(),
             },
         );
     }
@@ -480,7 +495,7 @@ module spacely3::profiles3 {
             if (message.id == message_id && !message.is_deleted) {
                 message.is_deleted = true;
                 event::emit_event(
-                    &mut borrow_global_mut<ProfileCollection>(@spacely3).message_deleted_events,
+                    &mut borrow_global_mut<ProfileCollection>(@spacely2).message_deleted_events,
                     MessageDeletedEvent {
                         message_id,
                         deleted_by: profile_addr,
@@ -499,7 +514,7 @@ module spacely3::profiles3 {
             if (message.id == message_id && !message.is_deleted) {
                 message.is_deleted = true;
                 event::emit_event(
-                    &mut borrow_global_mut<ProfileCollection>(@spacely3).message_deleted_events,
+                    &mut borrow_global_mut<ProfileCollection>(@spacely2).message_deleted_events,
                     MessageDeletedEvent {
                         message_id,
                         deleted_by: profile_addr,
@@ -524,10 +539,11 @@ module spacely3::profiles3 {
         start_time: u64,
         language: String,
         topics: vector<String>
-    ) acquires UserProfile, SpaceList, ProfileCollection {
+    ) acquires UserProfile, SpaceList, ProfileCollection, ProfileCapability {
         let profile_addr = object::object_address(&profile);
         let profile_data = borrow_global<UserProfile>(profile_addr);
         assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
+        assert!(check_capability(profile, 3), error::permission_denied(CAPABILITY_NOT_FOUND));
 
         let space = Space {
             name,
@@ -590,6 +606,25 @@ module spacely3::profiles3 {
             i = i + 1;
         };
         result
+    }
+
+    public entry fun set_profile_capability(
+        account: &signer,
+        profile: Object<UserProfile>,
+        can_update_profile: bool,
+        can_manage_friends: bool,
+        can_manage_spaces: bool,
+        can_send_messages: bool
+    ) acquires UserProfile, ProfileCapability {
+        let profile_addr = object::object_address(&profile);
+        let profile_data = borrow_global<UserProfile>(profile_addr);
+        assert!(signer::address_of(account) == profile_data.creator, error::permission_denied(UNAUTHORIZED));
+        
+        let cap = borrow_global_mut<ProfileCapability>(profile_addr);
+        cap.can_update_profile = can_update_profile;
+        cap.can_manage_friends = can_manage_friends;
+        cap.can_manage_spaces = can_manage_spaces;
+        cap.can_send_messages = can_send_messages;
     }
 
     #[test_only]

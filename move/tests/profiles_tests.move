@@ -1,10 +1,10 @@
 #[test_only]
-module spacely3::profiles3_tests {
+module spacely3::profiles_tests {
     use std::string::{String, Self};
     use std::signer;
     use std::vector;
     use aptos_framework::timestamp;
-    use spacely3::profiles3;
+    use spacely3::profiles;
 
     // Test constants
     const USERNAME: vector<u8> = b"testuser";
@@ -19,14 +19,14 @@ module spacely3::profiles3_tests {
         // Set up timestamp for testing
         timestamp::set_time_has_started_for_testing(framework);
         // Initialize the module
-        profiles3::init_module_for_test(admin);
+        profiles::init_module_for_test(admin);
     }
 
     #[test(admin = @spacely3, framework = @aptos_framework)]
     public fun test_profile_creation(admin: &signer, framework: &signer) {
         setup(admin, framework);
 
-        let profile = profiles3::create_profile(
+        let profile = profiles::create_profile(
             admin,
             string::utf8(USERNAME),
             string::utf8(BIO),
@@ -36,7 +36,7 @@ module spacely3::profiles3_tests {
         );
 
         // Verify profile data
-        let (name, bio, img, affil, friend_count, _, _, addr) = profiles3::get_profile(profile);
+        let (name, bio, img, affil, friend_count, _, _, addr) = profiles::get_profile(profile);
         assert!(string::bytes(&name) == &USERNAME, 1);
         assert!(string::bytes(&bio) == &BIO, 2);
         assert!(string::bytes(&img) == &PROFILE_IMG, 3);
@@ -49,7 +49,7 @@ module spacely3::profiles3_tests {
     public fun test_update_profile(admin: &signer, framework: &signer) {
         setup(admin, framework);
 
-        let profile = profiles3::create_profile(
+        let profile = profiles::create_profile(
             admin,
             string::utf8(USERNAME),
             string::utf8(BIO),
@@ -63,12 +63,12 @@ module spacely3::profiles3_tests {
         let new_img = string::utf8(b"new_img.jpg");
         let new_affil = string::utf8(b"New Org");
 
-        profiles3::update_bio(admin, profile, new_bio);
-        profiles3::update_profile_image(admin, profile, new_img);
-        profiles3::update_affiliation(admin, profile, new_affil);
+        profiles::update_bio(admin, profile, new_bio);
+        profiles::update_profile_image(admin, profile, new_img);
+        profiles::update_affiliation(admin, profile, new_affil);
 
         // Verify updates
-        let (_, bio, img, affil, _, _, _, _) = profiles3::get_profile(profile);
+        let (_, bio, img, affil, _, _, _, _) = profiles::get_profile(profile);
         assert!(string::bytes(&bio) == string::bytes(&new_bio), 1);
         assert!(string::bytes(&img) == string::bytes(&new_img), 2);
         assert!(string::bytes(&affil) == string::bytes(&new_affil), 3);
@@ -78,7 +78,7 @@ module spacely3::profiles3_tests {
     public fun test_friend_operations(admin: &signer, framework: &signer) {
         setup(admin, framework);
 
-        let profile1 = profiles3::create_profile(
+        let profile1 = profiles::create_profile(
             admin,
             string::utf8(b"user1"),
             string::utf8(BIO),
@@ -87,7 +87,7 @@ module spacely3::profiles3_tests {
             string::utf8(b"https://twitter.com/user1")
         );
 
-        let profile2 = profiles3::create_profile(
+        let profile2 = profiles::create_profile(
             admin,
             string::utf8(b"user2"),
             string::utf8(BIO),
@@ -97,19 +97,19 @@ module spacely3::profiles3_tests {
         );
 
         // Add friend
-        profiles3::add_friend(admin, profile1, profile2);
-        assert!(profiles3::is_friend(profile1, profile2), 1);
+        profiles::add_friend(admin, profile1, profile2);
+        assert!(profiles::is_friend(profile1, profile2), 1);
 
         // Remove friend
-        profiles3::remove_friend(admin, profile1, profile2);
-        assert!(!profiles3::is_friend(profile1, profile2), 2);
+        profiles::remove_friend(admin, profile1, profile2);
+        assert!(!profiles::is_friend(profile1, profile2), 2);
     }
 
     #[test(admin = @spacely3, other_user = @0x123, framework = @aptos_framework)]
     public fun test_badge_operations(admin: &signer, other_user: &signer, framework: &signer) {
         setup(admin, framework);
 
-        let profile = profiles3::create_profile(
+        let profile = profiles::create_profile(
             admin,
             string::utf8(USERNAME),
             string::utf8(BIO),
@@ -120,21 +120,21 @@ module spacely3::profiles3_tests {
 
         // Test that admin can add badge
         let badge1 = string::utf8(BADGE_HASH);
-        profiles3::add_badge(admin, profile, badge1);
+        profiles::add_badge(admin, profile, badge1);
 
-        let badges = profiles3::get_badges(profile);
+        let badges = profiles::get_badges(profile);
         assert!(vector::contains(&badges, &badge1), 1);
 
         // Test that another user can also add badge
         let badge2 = string::utf8(b"another_badge");
-        profiles3::add_badge(other_user, profile, badge2);
+        profiles::add_badge(other_user, profile, badge2);
 
-        let badges = profiles3::get_badges(profile);
+        let badges = profiles::get_badges(profile);
         assert!(vector::contains(&badges, &badge2), 2);
 
         // Test that duplicate badges aren't added
-        profiles3::add_badge(other_user, profile, badge2);
-        let badges = profiles3::get_badges(profile);
+        profiles::add_badge(other_user, profile, badge2);
+        let badges = profiles::get_badges(profile);
         assert!(vector::length(&badges) == 2, 3); // Still only 2 badges
     }
 
@@ -142,7 +142,7 @@ module spacely3::profiles3_tests {
     public fun test_messaging(admin: &signer, framework: &signer) {
         setup(admin, framework);
 
-        let profile1 = profiles3::create_profile(
+        let profile1 = profiles::create_profile(
             admin,
             string::utf8(b"user1"),
             string::utf8(BIO),
@@ -151,7 +151,7 @@ module spacely3::profiles3_tests {
             string::utf8(b"https://twitter.com/user1")
         );
 
-        let profile2 = profiles3::create_profile(
+        let profile2 = profiles::create_profile(
             admin,
             string::utf8(b"user2"),
             string::utf8(BIO),
@@ -160,17 +160,17 @@ module spacely3::profiles3_tests {
             string::utf8(b"https://twitter.com/user2")
         );
 
-        profiles3::send_message(profile1, profile2, string::utf8(TEST_MESSAGE));
+        profiles::send_message(profile1, profile2, string::utf8(TEST_MESSAGE));
 
         // Delete message
-        profiles3::delete_message(profile1, 0);
+        profiles::delete_message(profile1, 0);
     }
 
     #[test(admin = @spacely3, framework = @aptos_framework)]
-    public fun test_space_operations(admin: &signer, framework: &signer) {
+    public fun test_recurring_space_creation(admin: &signer, framework: &signer) {
         setup(admin, framework);
 
-        let profile = profiles3::create_profile(
+        let profile = profiles::create_profile(
             admin,
             string::utf8(USERNAME),
             string::utf8(BIO),
@@ -179,46 +179,136 @@ module spacely3::profiles3_tests {
             string::utf8(TWITTER_URL)
         );
 
+        // Set current timestamp
+        timestamp::update_global_time_for_test(1000000);
+        let start_time = timestamp::now_seconds() + 3600; // Start in 1 hour
+        
         let topics = vector::empty<String>();
         vector::push_back(&mut topics, string::utf8(b"Move"));
         vector::push_back(&mut topics, string::utf8(b"Blockchain"));
 
-        profiles3::create_space(
+        // Create a recurring space
+        profiles::create_space(
             admin,
             profile,
-            string::utf8(b"Move Language Tutorial"),
-            0, // current time
+            string::utf8(b"Weekly Move Workshop"),
+            start_time,
+            3600, // 1 hour duration
             string::utf8(b"English"),
-            topics
+            topics,
+            0, // category
+            10, // max participants
+            string::utf8(b"Weekly workshop about Move language"),
+            true, // is_recurring
+            7 // recurring_interval (weekly)
         );
 
-        let spaces = profiles3::get_spaces(profile);
-        assert!(vector::length(&spaces) == 1, 1);
+        // Get all spaces and verify
+        let spaces = profiles::get_spaces(profile);
+        assert!(vector::length(&spaces) == 2, 1); // Original space + first recurring instance
 
-        // Update space
-        let new_topics = vector::empty<String>();
-        vector::push_back(&mut new_topics, string::utf8(b"Move"));
-        vector::push_back(&mut new_topics, string::utf8(b"Smart Contracts"));
+        // Get recurring spaces specifically
+        let recurring_spaces = profiles::get_recurring_spaces(profile);
+        assert!(vector::length(&recurring_spaces) == 2, 2); // Parent space + child space
 
-        profiles3::update_space(
+        let recurring_space = vector::borrow(&recurring_spaces, 0);
+    assert!(profiles::is_space_recurring(*recurring_space) == true, 3);
+    assert!(profiles::space_recurring_interval(*recurring_space) == 7, 4);
+    assert!(profiles::space_parent_space_id(*recurring_space) == 0, 5);
+    }
+
+    #[test(admin = @spacely3, framework = @aptos_framework)]
+    #[expected_failure(abort_code = profiles::INVALID_RECURRING_INTERVAL, location = spacely3::profiles3)]
+    public fun test_invalid_recurring_interval(admin: &signer, framework: &signer) {
+        setup(admin, framework);
+
+        let profile = profiles::create_profile(
+            admin,
+            string::utf8(USERNAME),
+            string::utf8(BIO),
+            string::utf8(PROFILE_IMG),
+            string::utf8(AFFILIATION),
+            string::utf8(TWITTER_URL)
+        );
+
+        // Set current timestamp
+        timestamp::update_global_time_for_test(1000000);
+        let start_time = timestamp::now_seconds() + 3600;
+        
+        let topics = vector::empty<String>();
+        vector::push_back(&mut topics, string::utf8(b"Move"));
+
+        // Try to create a space with invalid recurring interval (91 days, max is 90)
+        profiles::create_space(
             admin,
             profile,
-            0, // first space
-            string::utf8(b"Advanced Move Tutorial"),
-            1, // new time
-            new_topics
+            string::utf8(b"Invalid Recurring Space"),
+            start_time,
+            3600,
+            string::utf8(b"English"),
+            topics,
+            0,
+            10,
+            string::utf8(b"This should fail"),
+            true,
+            91
+        );
+    }
+
+    #[test(admin = @spacely3, framework = @aptos_framework)]
+    public fun test_recurring_space_next_occurrence(admin: &signer, framework: &signer) {
+        setup(admin, framework);
+
+        let profile = profiles::create_profile(
+            admin,
+            string::utf8(USERNAME),
+            string::utf8(BIO),
+            string::utf8(PROFILE_IMG),
+            string::utf8(AFFILIATION),
+            string::utf8(TWITTER_URL)
         );
 
-        let updated_spaces = profiles3::get_spaces(profile);
-        let space = *vector::borrow(&updated_spaces, 0);
-        assert!(profiles3::get_space_name(space) == string::utf8(b"Advanced Move Tutorial"), 2);
+        // Set current timestamp
+        timestamp::update_global_time_for_test(1000000);
+        let start_time = timestamp::now_seconds() + 3600;
+        
+        let topics = vector::empty<String>();
+        vector::push_back(&mut topics, string::utf8(b"Move"));
+
+        // Create a daily recurring space
+        profiles::create_space(
+            admin,
+            profile,
+            string::utf8(b"Daily Move Standup"),
+            start_time,
+            1800, // 30 minutes duration
+            string::utf8(b"English"),
+            topics,
+            0,
+            5,
+            string::utf8(b"Daily standup meeting"),
+            true,
+            1 // daily
+        );
+
+        // Get all spaces
+        let spaces = profiles::get_spaces(profile);
+        assert!(vector::length(&spaces) == 2, 1); // Original + first recurring
+
+        // Verify the recurring instance
+        let second_space = vector::borrow(&spaces, 1);
+    assert!(profiles::space_parent_space_id(*second_space) == 0, 2); // Points to first space
+    assert!(profiles::space_start_time(*second_space) == start_time + 86400, 3); // Next day
+    assert!(profiles::space_duration(*second_space) == 1800, 4); // Same duration
+    assert!(profiles::space_max_participants(*second_space) == 5, 5); // Same max participants
+    assert!(profiles::is_space_recurring(*second_space) == true, 6); // Still recurring
     }
 
     #[test(admin = @spacely3, framework = @aptos_framework)]
     public fun test_transfer_and_mutability(admin: &signer, framework: &signer) {
         setup(admin, framework);
 
-        let profile = profiles3::create_profile(
+        let profile = profiles::create_profile(
             admin,
             string::utf8(USERNAME),
             string::utf8(BIO),
@@ -228,18 +318,18 @@ module spacely3::profiles3_tests {
         );
 
         // Verify initial mutability
-        assert!(profiles3::is_mutable(profile), 1);
+        assert!(profiles::is_mutable(profile), 1);
 
         // Disable transfers
-        profiles3::disable_transfer(admin, profile);
-        assert!(!profiles3::is_mutable(profile), 2);
+        profiles::disable_transfer(admin, profile);
+        assert!(!profiles::is_mutable(profile), 2);
     }
 
     #[test(admin = @spacely3, framework = @aptos_framework)]
     public fun test_twitter_url_update(admin: &signer, framework: &signer) {
         setup(admin, framework);
 
-        let profile = profiles3::create_profile(
+        let profile = profiles::create_profile(
             admin,
             string::utf8(USERNAME),
             string::utf8(BIO),
@@ -250,7 +340,7 @@ module spacely3::profiles3_tests {
 
         // Update twitter URL
         let new_twitter_url = string::utf8(b"https://twitter.com/newhandle");
-        profiles3::update_twitter_url(admin, profile, new_twitter_url);
+        profiles::update_twitter_url(admin, profile, new_twitter_url);
     }
 
     #[test(admin = @spacely3, framework = @aptos_framework)]
@@ -259,7 +349,7 @@ module spacely3::profiles3_tests {
         setup(admin, framework);
         
         // Create first profile
-        profiles3::create_profile(
+        profiles::create_profile(
             admin,
             string::utf8(USERNAME),
             string::utf8(BIO),
@@ -269,7 +359,7 @@ module spacely3::profiles3_tests {
         );
 
         // Try to create second profile with same username (should fail)
-        profiles3::create_profile(
+        profiles::create_profile(
             admin,
             string::utf8(USERNAME),
             string::utf8(BIO),
