@@ -36,20 +36,17 @@ export default function useProfileContract() {
 			if (!profileData?.username || !profileData?.twitter_url) {
 				throw new Error('Username and Twitter URL are required');
 			}
-			
+
 			const transaction = {
-				payload: {
-					type: "entry_function_payload",
-					function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-					type_arguments: [],
-					arguments: [
-						profileData.username || '',
-						profileData.bio || '',
-						profileData.profile_image || '',
-						profileData.affiliation || '',
-						profileData.twitter_url || ''
-					]
-				}
+				function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+				arguments: [
+					profileData.username || '',
+					profileData.bio || '',
+					profileData.profile_image || '',
+					profileData.affiliation || '',
+					profileData.twitter_url || ''
+				],
+				type_arguments: []
 			};
 
 			console.log('Submitting transaction:', transaction);
