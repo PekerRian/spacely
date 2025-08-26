@@ -1,4 +1,4 @@
-
+import './user.css';
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import useProfileContract from '../hooks/useProfileContract';
