@@ -37,21 +37,23 @@ export default function useProfileContract() {
 				throw new Error('Username and Twitter URL are required');
 			}
 			const transaction = {
-				data: {
-					function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
-					typeArguments: [],
-					functionArguments: [
-						profileData.username || '',
-						profileData.bio || '',
-						profileData.profile_image || '',
-						profileData.affiliation || '',
-						profileData.twitter_url || ''
-					]
-				}
+				type: "entry_function_payload",
+				function: `${MODULE_ADDRESS}::spacelyapp::create_profile_entry`,
+				arguments: [
+					profileData.username || '',
+					profileData.bio || '',
+					profileData.profile_image || '',
+					profileData.affiliation || '',
+					profileData.twitter_url || ''
+				],
+				type_arguments: []
 			};
 			console.log('Submitting transaction:', transaction);
-			const response = await signAndSubmitTransaction(transaction);
-			await response.wait();
+			const pendingTransaction = await signAndSubmitTransaction(transaction);
+			// Wait for transaction
+			if (pendingTransaction) {
+				await pendingTransaction.wait();
+			}
 			return true;
 		} catch (error) {
 			console.error('Error creating profile:', error);
