@@ -13,10 +13,17 @@ export default function useProfileInfo() {
       return;
     }
     const toHexString = (addr) => {
-      if (typeof addr === 'string') return addr.startsWith('0x') ? addr : '0x' + addr;
-      if (addr?.data && Array.isArray(addr.data)) {
+      if (!addr) return '';
+      // If addr is an object with a 'data' property, use that
+      if (typeof addr === 'object' && addr.data && Array.isArray(addr.data)) {
         return '0x' + Array.from(addr.data).map(x => x.toString(16).padStart(2, '0')).join('');
       }
+      // If addr is a Uint8Array directly
+      if (addr instanceof Uint8Array) {
+        return '0x' + Array.from(addr).map(x => x.toString(16).padStart(2, '0')).join('');
+      }
+      // If addr is a string
+      if (typeof addr === 'string') return addr.startsWith('0x') ? addr : '0x' + addr;
       return '';
     };
     const fetchProfile = async () => {
