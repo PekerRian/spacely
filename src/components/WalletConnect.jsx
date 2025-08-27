@@ -4,8 +4,6 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import '../styles/wallet.css';
 
 export function WalletConnect() {
-  const walletContext = useWallet();
-  
   const { 
     connect,
     disconnect,
@@ -13,14 +11,20 @@ export function WalletConnect() {
     connected,
     wallet: activeWallet,
     wallets,
-    isLoading
-  } = walletContext || {};
-  
-  // Ensure all values are available with proper defaults
-  const safeWallets = useMemo(() => {
-    if (!walletContext || !Array.isArray(wallets)) return [];
-    return wallets;
-  }, [walletContext, wallets]);
+    isLoading,
+  } = useWallet();
+
+  // Safely get available wallets
+  const availableWallets = useMemo(() => {
+    if (!Array.isArray(wallets)) return [];
+    return wallets.filter(wallet => {
+      try {
+        return wallet.readyState === 'Installed' || wallet.readyState === 'Loadable';
+      } catch (e) {
+        return false;
+      }
+    });
+  }, [wallets]);
   
   const isConnected = Boolean(connected && account);
   const displayAddress = account?.address;
@@ -46,20 +50,27 @@ export function WalletConnect() {
   const handleConnect = async (wallet) => {
     try {
       setError(null);
+      if (!wallet) throw new Error('No wallet selected');
       
-      // If wallet has a deeplinkProvider (for mobile), use it
-      if ("deeplinkProvider" in wallet && wallet.deeplinkProvider) {
-        window.location.href = `${wallet.deeplinkProvider}?link=${window.location.href}`;
+      // Check if wallet is installed
+      if (wallet.readyState === 'NotDetected') {
+        window.open(wallet.url, '_blank');
+        return;
+      }
+
+      // If on mobile and wallet has deeplink
+      if (window.innerWidth <= 768 && wallet.deeplinkProvider) {
+        window.location.href = `${wallet.deeplinkProvider}?link=${encodeURIComponent(window.location.href)}`;
         return;
       }
       
-      // Otherwise connect normally
+      // Connect normally
       await connect(wallet.name);
       setShowModal(false);
     } catch (err) {
       const message = err.message || 'Failed to connect wallet';
       setError(message);
-      console.error('Wallet connection error:', { name: err.name, message });
+      console.error('Wallet connection error:', err);
     }
   };
 
@@ -115,8 +126,8 @@ export function WalletConnect() {
 
             <div className="wallet-section">
               <h3 className="wallet-section-title">Available Wallets</h3>
-              {safeWallets.length > 0 ? (
-                safeWallets.map((wallet) => (
+              {availableWallets.length > 0 ? (
+                availableWallets.map((wallet) => (
                   <button
                     key={wallet.name}
                     className={`wallet-option ${activeWallet?.name === wallet.name ? 'active' : ''}`}
