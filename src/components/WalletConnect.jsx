@@ -106,7 +106,7 @@ export function WalletConnect() {
 
             <div className="wallet-section">
               <h3 className="wallet-section-title">Available Wallets</h3>
-              {wallets && wallets.length > 0 ? (
+              {Array.isArray(wallets) && wallets.length > 0 ? (
                 wallets.map((wallet) => (
                   <button
                     key={wallet.name}

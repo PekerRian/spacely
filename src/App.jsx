@@ -12,7 +12,9 @@ import { WalletConnect } from './components/WalletConnect';
 
 function Starfield() {
   // Spiral starfield: each star gets a unique angle and speed
-  const stars = Array.from({ length: 80 }).map((_, i) => {
+  const length = 80;
+  const starArray = Array.from({ length });
+  const stars = starArray.map((_, i) => {
     const size = Math.random() * 2 + 1;
     const angle = Math.random() * 2 * Math.PI; // random angle in radians
     const spiralTurns = Math.random() * 2 + 1.5; // 1.5 to 3.5 turns
@@ -41,6 +43,8 @@ function Starfield() {
   });
   return <div className="stars">{stars}</div>;
 }
+
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   const [twitterProfile, setTwitterProfile] = useState(null);
@@ -98,31 +102,33 @@ function App() {
   }, []);
 
   return (
-    <WalletProvider>
-      <TwitterAuthContext.Provider value={{ twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm }}>
-        <Router>
-          <div>
-            <Starfield />
-            <nav className="navbar">
-              <div className="navbar-container">
-                <div className="navbar-links">
-                  <NavLink to="/user" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>👾 USER</NavLink>
-                  <NavLink to="/calendar" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>🛸 CALENDAR</NavLink>
-                  <NavLink to="/ecosystem" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>🚀 ECOSYSTEM</NavLink>
+    <ErrorBoundary>
+      <WalletProvider>
+        <TwitterAuthContext.Provider value={{ twitterProfile, setTwitterProfile, showProfileForm, setShowProfileForm }}>
+          <Router>
+            <div>
+              <Starfield />
+              <nav className="navbar">
+                <div className="navbar-container">
+                  <div className="navbar-links">
+                    <NavLink to="/user" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>👾 USER</NavLink>
+                    <NavLink to="/calendar" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>🛸 CALENDAR</NavLink>
+                    <NavLink to="/ecosystem" className={({ isActive }) => isActive ? 'navbar-link active' : 'navbar-link'}>🚀 ECOSYSTEM</NavLink>
+                  </div>
+                  <WalletConnect />
                 </div>
-                <WalletConnect />
-              </div>
-            </nav>
-            <Routes>
-              <Route path="/" element={<UserPage />} />
-              <Route path="/user" element={<UserPage />} />
-              <Route path="/calendar" element={<Calendar />} />
-              <Route path="/ecosystem" element={<Ecosystem />} />
-            </Routes>
-          </div>
-        </Router>
-      </TwitterAuthContext.Provider>
-    </WalletProvider>
+              </nav>
+              <Routes>
+                <Route path="/" element={<UserPage />} />
+                <Route path="/user" element={<UserPage />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/ecosystem" element={<Ecosystem />} />
+              </Routes>
+            </div>
+          </Router>
+        </TwitterAuthContext.Provider>
+      </WalletProvider>
+    </ErrorBoundary>
   );
 }
 
