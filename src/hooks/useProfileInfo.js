@@ -14,47 +14,35 @@ export default function useProfileInfo() {
     }
     const toHexString = (addr) => {
       if (!addr) return '';
-      // If addr is an object with a 'data' property that is a Uint8Array
-      if (typeof addr === 'object' && addr.data && addr.data instanceof Uint8Array) {
-        return '0x' + Array.from(addr.data).map(x => x.toString(16).padStart(2, '0')).join('');
-      }
-      // If addr is an object with a 'data' property that is an array
-      if (typeof addr === 'object' && addr.data && Array.isArray(addr.data)) {
-        return '0x' + Array.from(addr.data).map(x => x.toString(16).padStart(2, '0')).join('');
-      }
-      // If addr is a Uint8Array directly
+      if (typeof addr === 'string') return addr.startsWith('0x') ? addr : `0x${addr}`;
       if (addr instanceof Uint8Array) {
-        return '0x' + Array.from(addr).map(x => x.toString(16).padStart(2, '0')).join('');
+        return `0x${Array.from(addr).map(x => x.toString(16).padStart(2, '0')).join('')}`;
       }
-      // If addr is a string
-      if (typeof addr === 'string') return addr.startsWith('0x') ? addr : '0x' + addr;
+      if (typeof addr === 'object' && addr.data) {
+        const data = addr.data instanceof Uint8Array ? Array.from(addr.data) : addr.data;
+        return `0x${data.map(x => x.toString(16).padStart(2, '0')).join('')}`;
+      }
       return '';
     };
+
     const fetchProfile = async () => {
-      console.log('Fetching profile for account.address:', account?.address);
       const addressHex = toHexString(account?.address);
-      console.log('Converted addressHex:', addressHex);
       if (!addressHex) {
         setProfile(null);
         return;
       }
+
       setLoading(true);
-      const url = `https://fullnode.testnet.aptoslabs.com/v1/accounts/${addressHex}/resources`;
-      console.log('Fetch URL:', url);
       try {
-        const res = await fetch(url);
+        const res = await fetch(`https://fullnode.testnet.aptoslabs.com/v1/accounts/${addressHex}/resources`);
         if (!res.ok) throw new Error('Failed to fetch resources');
+        
         const resources = await res.json();
-        console.log('Fetched resources for', addressHex, resources);
         const profileResource = resources.find(
           (r) => r.type === '0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c36c32f72c51::spacelyapp::UserProfile'
         );
-        console.log('UserProfile resource:', profileResource);
-        if (profileResource && profileResource.data) {
-          setProfile(profileResource.data);
-        } else {
-          setProfile(null);
-        }
+
+        setProfile(profileResource?.data || null);
       } catch (e) {
         setProfile(null);
       } finally {
