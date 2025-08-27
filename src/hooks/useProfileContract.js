@@ -6,7 +6,8 @@ const MODULE_ADDRESS = '0x19df1f1bf45028cbd46f34b49ddb9ac181e561128ef4ced0aa60c3
 
 export default function useProfileContract() {
 	const [loading, setLoading] = useState(false);
-	const { account, signAndSubmitTransaction, connected } = useWallet();
+	const walletApi = useWallet();
+	const { account, signAndSubmitTransaction, connected, wallet } = walletApi;
 
 	const hasProfile = async () => {
 		try {
@@ -48,6 +49,12 @@ export default function useProfileContract() {
 					profileData.twitter_url || ''
 				]
 			};
+
+			console.log('Wallet API dump:', {
+				walletApiKeys: Object.keys(walletApi || {}),
+				walletKeys: wallet ? Object.keys(wallet) : undefined,
+				signAndSubmitTransactionType: typeof signAndSubmitTransaction
+			});
 
 			if (typeof signAndSubmitTransaction !== 'function') {
 				throw new Error('signAndSubmitTransaction is not available from wallet adapter');
