@@ -28,4 +28,5 @@ export function WalletProvider({ children }) {
         {children}
       </AptosWalletAdapterProvider>
     </ErrorBoundary>
+  );
 }
