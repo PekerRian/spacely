@@ -10,20 +10,20 @@ export function WalletConnect() {
     account,
     connected,
     wallet: activeWallet,
-    wallets,
+    wallets = [], // Provide default empty array
     isLoading
-  } = useWallet();
+  } = useWallet() || {}; // Provide default empty object
   
-  // Ensure wallets is always an array
+  // Ensure all values are available
   const safeWallets = useMemo(() => Array.isArray(wallets) ? wallets : [], [wallets]);
-  
+  const isConnected = Boolean(connected && account);
+  const displayAddress = account?.address;
+
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showAddressMenu, setShowAddressMenu] = useState(false);
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
-
-
 
   useEffect(() => {
     function handleClickOutside(event) {

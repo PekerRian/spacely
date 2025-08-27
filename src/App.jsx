@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { TwitterAuthContext } from './contexts/TwitterAuthContext';
 import './navbar.css';
 import UserPage from './pages/UserPage.jsx';
@@ -7,20 +7,21 @@ import Calendar from './pages/Calendar.jsx';
 import Ecosystem from './pages/Ecosystem.jsx';
 import { WalletProvider } from './contexts/WalletContext';
 import { WalletConnect } from './components/WalletConnect';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Context to share Twitter profile and form state
 
 function Starfield() {
   // Spiral starfield: each star gets a unique angle and speed
-  const length = 80;
-  const starArray = Array.from({ length });
-  const stars = starArray.map((_, i) => {
-    const size = Math.random() * 2 + 1;
-    const angle = Math.random() * 2 * Math.PI; // random angle in radians
-    const spiralTurns = Math.random() * 2 + 1.5; // 1.5 to 3.5 turns
-    const duration = Math.random() * 3 + 12; // 8s to 16s (slower)
-    const delay = Math.random() * 6;
-    const opacity = Math.random() * 0.5 + 0.5;
+  const stars = useMemo(() => {
+    const length = 80;
+    return new Array(length).fill(null).map((_, i) => {
+      const size = Math.random() * 2 + 1;
+      const angle = Math.random() * 2 * Math.PI; // random angle in radians
+      const spiralTurns = Math.random() * 2 + 1.5; // 1.5 to 3.5 turns
+      const duration = Math.random() * 3 + 12; // 8s to 16s (slower)
+      const delay = Math.random() * 6;
+      const opacity = Math.random() * 0.5 + 0.5;
     // Each star will animate from center (50vw, 50vh) outward in a spiral
     return (
       <div
