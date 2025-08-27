@@ -9,8 +9,6 @@ import { WalletProvider } from './contexts/WalletContext';
 import { WalletConnect } from './components/WalletConnect';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
-// Context to share Twitter profile and form state
-
 function Starfield() {
   // Spiral starfield: each star gets a unique angle and speed
   const stars = useMemo(() => {
@@ -22,30 +20,30 @@ function Starfield() {
       const duration = Math.random() * 3 + 12; // 8s to 16s (slower)
       const delay = Math.random() * 6;
       const opacity = Math.random() * 0.5 + 0.5;
-    // Each star will animate from center (50vw, 50vh) outward in a spiral
-    return (
-      <div
-        key={i}
-        className="star spiral-star"
-        style={{
-          width: size + 'px',
-          height: size + 'px',
-          left: '50vw',
-          top: '50vh',
-          opacity,
-          // Custom properties for animation
-          '--spiral-angle': angle + 'rad',
-          '--spiral-turns': spiralTurns,
-          animationDuration: duration + 's',
-          animationDelay: delay + 's',
-        }}
-      />
-    );
-  });
+
+      return (
+        <div
+          key={i}
+          className="star spiral-star"
+          style={{
+            width: size + 'px',
+            height: size + 'px',
+            left: '50vw',
+            top: '50vh',
+            opacity,
+            // Custom properties for animation
+            '--spiral-angle': angle + 'rad',
+            '--spiral-turns': spiralTurns,
+            animationDuration: duration + 's',
+            animationDelay: delay + 's',
+          }}
+        />
+      );
+    });
+  }, []); // Empty deps array since we don't have any dependencies
+
   return <div className="stars">{stars}</div>;
 }
-
-import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   const [twitterProfile, setTwitterProfile] = useState(null);
