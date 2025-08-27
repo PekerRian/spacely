@@ -14,6 +14,9 @@ export function WalletConnect() {
     isLoading
   } = useWallet();
   
+  // Ensure wallets is always an array
+  const safeWallets = useMemo(() => Array.isArray(wallets) ? wallets : [], [wallets]);
+  
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showAddressMenu, setShowAddressMenu] = useState(false);
@@ -106,8 +109,8 @@ export function WalletConnect() {
 
             <div className="wallet-section">
               <h3 className="wallet-section-title">Available Wallets</h3>
-              {Array.isArray(wallets) && wallets.length > 0 ? (
-                wallets.map((wallet) => (
+              {safeWallets.length > 0 ? (
+                safeWallets.map((wallet) => (
                   <button
                     key={wallet.name}
                     className={`wallet-option ${activeWallet?.name === wallet.name ? 'active' : ''}`}
