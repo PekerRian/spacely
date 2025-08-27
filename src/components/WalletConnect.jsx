@@ -4,18 +4,24 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import '../styles/wallet.css';
 
 export function WalletConnect() {
+  const walletContext = useWallet();
+  
   const { 
     connect,
     disconnect,
     account,
     connected,
     wallet: activeWallet,
-    wallets = [], // Provide default empty array
+    wallets,
     isLoading
-  } = useWallet() || {}; // Provide default empty object
+  } = walletContext || {};
   
-  // Ensure all values are available
-  const safeWallets = useMemo(() => Array.isArray(wallets) ? wallets : [], [wallets]);
+  // Ensure all values are available with proper defaults
+  const safeWallets = useMemo(() => {
+    if (!walletContext || !Array.isArray(wallets)) return [];
+    return wallets;
+  }, [walletContext, wallets]);
+  
   const isConnected = Boolean(connected && account);
   const displayAddress = account?.address;
 
